@@ -27,7 +27,7 @@ def OneStep(hRunningController: TRunController):
     fcount = 0
     cDate = 0
     cWR, lastWR = 0, 0
-    x, x0, Tave, SumSnow, del_SnowPr = 0, 0, 0, 0, 0
+    x, x0, Tave, sumSnow, delSnowPrec = 0, 0, 0, 0, 0
     bTime = None  #: real
 
     result = False
@@ -36,8 +36,8 @@ def OneStep(hRunningController: TRunController):
     # Один шаг модели за текущее число
     cWR = hRunningController.agroEcoSystem.Air_Part.currentEnv
     cDate = cWR.date
-    Tave = cWR.tave
-    SumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
+    Tave = cWR.Tave
+    sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
 
     print('Step2')
     # Утренние технологические операции
@@ -50,12 +50,12 @@ def OneStep(hRunningController: TRunController):
 
     # Расчет баланса снега
     if (Tave < 0):
-        SumSnow = SumSnow + cWR.prec
+        sumSnow = sumSnow + cWR.Prec
         hRunningController.agroEcoSystem.Air_Part.alpha_snow = 0
     else:
-        del_SnowPr = popov_melting(hRunningController.agroEcoSystem)  # Проверить формулу Попова
-        cWR.prec = cWR.prec + del_SnowPr
-        SumSnow = SumSnow - del_SnowPr
+        delSnowPrec = popov_melting(hRunningController.agroEcoSystem)  # Проверить формулу Попова
+        cWR.Prec = cWR.Prec + delSnowPrec
+        sumSnow = sumSnow - delSnowPrec
 
     print('Step6')
     # Радиация и фотосинтез(с потенциальным сопротивлением устьиц)
@@ -75,7 +75,7 @@ def OneStep(hRunningController: TRunController):
     hRunningController.agroEcoSystem.Air_Part.sumTrans = x
     x0 = x
     x = hRunningController.agroEcoSystem.Air_Part.sumPrec
-    x = x + cWR.prec + cWR.Watering
+    x = x + cWR.Prec + cWR.Watering
     hRunningController.agroEcoSystem.Air_Part.sumPrec = x
 
     print('Step10')
@@ -93,7 +93,7 @@ def OneStep(hRunningController: TRunController):
 
     print('Step13')
     # Почвенно - азотный блок
-    if (Tave >= 0) and (SumSnow < 1):
+    if (Tave >= 0) and (sumSnow < 1):
         RecalculateSoilNitrogen(hRunningController.agroEcoSystem)
 
     print('Step14')
@@ -104,7 +104,7 @@ def OneStep(hRunningController: TRunController):
     print('Step15')
     # Освежение динамических переменных
     hRunningController.agroEcoSystem.refreshing()
-    hRunningController.agroEcoSystem.Air_Part.SumSnow = SumSnow
+    hRunningController.agroEcoSystem.Air_Part.SumSnow = sumSnow
 
     print('Step16')
     # Добивание очередной строчки в файл выходных параметров
@@ -119,8 +119,8 @@ def OneStep(hRunningController: TRunController):
     lastWR.Date = hRunningController.agroEcoSystem.Air_Part.currentEnv.date
     lastWR.Tmin = hRunningController.agroEcoSystem.Air_Part.currentEnv.Tmin
     lastWR.Tmax = hRunningController.agroEcoSystem.Air_Part.currentEnv.Tmax
-    lastWR.prec = hRunningController.agroEcoSystem.Air_Part.currentEnv.prec
-    lastWR.Tave = hRunningController.agroEcoSystem.Air_Part.currentEnv.tave
+    lastWR.Prec = hRunningController.agroEcoSystem.Air_Part.currentEnv.Prec
+    lastWR.Tave = hRunningController.agroEcoSystem.Air_Part.currentEnv.Tave
     lastWR.Kex = hRunningController.agroEcoSystem.Air_Part.currentEnv.Kex
     lastWR.Watering = 0.0
     hRunningController.agroEcoSystem.Air_Part.currentEnv.Delete()
