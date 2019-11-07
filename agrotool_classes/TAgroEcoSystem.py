@@ -6,12 +6,12 @@ from .OwningElement import OwningElement
 class TWeatherRecord():
     def __init__(self, owningElement, isSomething):
         self.date = owningElement.date
-        self.tave = owningElement.tave
-        self.prec = 0
+        self.Prec = 0  # precipitation
         self.Watering = 0
         self.OwningElement = OwningElement()
-        self.Tmin = 0
-        self.Tmax = 0
+        self.Tmin = 0  # min temperature
+        self.Tmax = 0  # max temperature
+        self.Tave = owningElement.tave  # average temperature
         self.Kex = 0
 
     def Delete(self):
