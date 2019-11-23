@@ -26,4 +26,7 @@ def popov_melting(cSystem: TAgroEcoSystem):
     SumSnow = cSystem.Air_Part.sumSnow
     sum = max(sum_day + sum_night, 0)
 
-    return min(sum, SumSnow)
+    result = min(sum, SumSnow)
+    print("popov return %d (must be checked)" % result)
+
+    return result

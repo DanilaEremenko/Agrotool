@@ -1,4 +1,5 @@
 # TODO check functions
+from agrotool_lib.DebugInspector import whoami
 def RadPhotosynthesis(cSystem, isBio):
     # Расчет коэффициента поглощения ФАР на глубине
     def AP(cLAI):
@@ -22,4 +23,5 @@ def RadPhotosynthesis(cSystem, isBio):
     # Рассчитывает следующие переменные
     # 1. Коротковолновые составлящие суточного радиационного баланса для почвы и верхней кромки посева
     # 2. Суточный фотосинтез посева (прирост углеродных ассимилятов)
+    print("%s is a stub" % whoami())
     return 0

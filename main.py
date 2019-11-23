@@ -17,6 +17,21 @@ from agrotool_lib.Snowmelt import popov_melting
 MAX_COUNT = 4  # // Максимальное количество "битых" погодных записей
 
 
+def pretty_print(text):
+    divisor = "-------------------------"
+    print("%s%s%s" % (divisor, text, divisor))
+
+
+def RefreshVisualDate(cDate, bTime):
+    # ModelForm.edDate.Text := DateToStr(cDate);
+    # ModelForm.edDate.Refresh;
+    # ModelForm.bioGauge.Position := trunc(bTime*100);
+    # ModelForm.bioGauge.Refresh;
+    # ModelForm.refreshSoilProfile;
+    print("RefreshVisualDate empty")
+    pass
+
+
 def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     while OneStep(hRunningController):
@@ -25,94 +40,96 @@ def ContinousRunning(hRunningController: TRunController):
 
 def OneStep(hRunningController: TRunController):
     fcount = 0
-    cDate = 0
-    cWR, lastWR = 0, 0
-    x, x0, Tave, sumSnow, delSnowPrec = 0, 0, 0, 0, 0
-    bTime = None  #: real
-
-    result = False
-
-    print('Step1')
+    pretty_print('Step1')
     # Один шаг модели за текущее число
     cWR = hRunningController.agroEcoSystem.Air_Part.currentEnv
     cDate = cWR.date
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
 
-    print('Step2')
+    pretty_print('Step2')
     # Утренние технологические операции
     hRunningController.technologyDescriptor.Irrigation_Regime.stepoAct(hRunningController.agroEcoSystem)
     hRunningController.technologyDescriptor.Fertilization_Regime.stepoAct(hRunningController.agroEcoSystem)
     hRunningController.technologyDescriptor.Soil_Tillage_Regime.stepoAct(hRunningController.agroEcoSystem)
 
-    print('Step3')
+    pretty_print('Step3')
     # Семантические операции
 
     # Расчет баланса снега
-    if (Tave < 0):
+    if (Tave < 0):  # Если средняя температура < 0 - количество снега увеличивается
         sumSnow = sumSnow + cWR.Prec
         hRunningController.agroEcoSystem.Air_Part.alpha_snow = 0
-    else:
+    else:  # Иначе считаем таяние снега и прибавляем осадки
         delSnowPrec = popov_melting(hRunningController.agroEcoSystem)  # Проверить формулу Попова
         cWR.Prec = cWR.Prec + delSnowPrec
         sumSnow = sumSnow - delSnowPrec
 
-    print('Step6')
+    pretty_print('Step6')
     # Радиация и фотосинтез(с потенциальным сопротивлением устьиц)
     RadPhotosynthesis(hRunningController.agroEcoSystem, False)
 
-    print('Step7')
+    pretty_print('Step7')
     # Водные потоки.Транспирация
     Evapotranspiration(hRunningController.agroEcoSystem)
 
-    print('Step8')
+    pretty_print('Step8')
     SoilTemperature(hRunningController.agroEcoSystem)
 
-    print('Step9')
+    pretty_print('Step9')
+    print("Some simple calculation without functions calls")
     # Расчет сумм осадков и транспирации
-    x = hRunningController.agroEcoSystem.Air_Part.sumTrans
-    x = x + hRunningController.agroEcoSystem.Crop_Part.Eplant + hRunningController.agroEcoSystem.Crop_Part.Esoil
-    hRunningController.agroEcoSystem.Air_Part.sumTrans = x
-    x0 = x
-    x = hRunningController.agroEcoSystem.Air_Part.sumPrec
-    x = x + cWR.Prec + cWR.Watering
-    hRunningController.agroEcoSystem.Air_Part.sumPrec = x
+    hRunningController.agroEcoSystem.Air_Part.sumTrans = hRunningController.agroEcoSystem.Air_Part.sumTrans \
+                                                         + hRunningController.agroEcoSystem.Crop_Part.Eplant \
+                                                         + hRunningController.agroEcoSystem.Crop_Part.Esoil
+    x0 = hRunningController.agroEcoSystem.Air_Part.sumTrans
 
-    print('Step10')
+    hRunningController.agroEcoSystem.Air_Part.sumPrec = hRunningController.agroEcoSystem.Air_Part.sumPrec \
+                                                        + cWR.Prec \
+                                                        + cWR.Watering
+
+    pretty_print('Step10')
     # Водные потоки в почве
     if (Tave >= 0):
         WaterSoilDynamics(hRunningController.agroEcoSystem)
+    else:
+        print("RecalculateSoilNitrogen was't called (Tave = %d)" % (Tave))
 
     # Радиация и фотосинтез(с реальным сопротивлением устьиц)
-    print('Step11')
+    pretty_print('Step11')
     RadPhotosynthesis(hRunningController.agroEcoSystem, True)
 
     # Развитие
-    print('Step12')
+    pretty_print('Step12')
     RecalculateBioTime(hRunningController.agroEcoSystem)
 
-    print('Step13')
+    pretty_print('Step13')
     # Почвенно - азотный блок
     if (Tave >= 0) and (sumSnow < 1):
         RecalculateSoilNitrogen(hRunningController.agroEcoSystem)
+    else:
+        print("RecalculateSoilNitrogen was't called(Tave = %d, sumSnow = %d)" % (Tave, sumSnow))
 
-    print('Step14')
+    pretty_print('Step14')
     # Рост.Распределение ассимилятов
     if hRunningController.agroEcoSystem.Crop_Part.Individual_Plant.Ifase > 1:
         Growth(hRunningController.agroEcoSystem)
+    else:
+        print("Growth was't called(Ifase = %d)" % (
+            hRunningController.agroEcoSystem.Crop_Part.Individual_Plant.Ifase))
 
-    print('Step15')
+    pretty_print('Step15')
     # Освежение динамических переменных
     hRunningController.agroEcoSystem.refreshing()
     hRunningController.agroEcoSystem.Air_Part.SumSnow = sumSnow
 
-    print('Step16')
+    pretty_print('Step16')
     # Добивание очередной строчки в файл выходных параметров
     TextOutput(hRunningController.agroEcoSystem, False)
 
-    print('Step17')
+    pretty_print('Step17')
     # Перевод даты на утро следующего дня
-    cDate = cDate + 1
+    cDate = cDate + 1  # TODO шаг?
 
     # Очистка внешнего окружения
     lastWR = TWeatherRecord(hRunningController.agroEcoSystem.Air_Part.currentEnv.OwningElement, False)
@@ -132,21 +149,23 @@ def OneStep(hRunningController: TRunController):
         fcount = fcount + 1
         if fcount > MAX_COUNT:  # (true) Этот счетчик больше критического
             result = True
-            exit(0)
+            return result
 
     else:
         lastWR.Date = cDate
         cWR = lastWR
 
-    print('Step18')
+    pretty_print('Step18')
     # Его присвоение
     hRunningController.agroEcoSystem.Air_Part.currentEnv = cWR
     bTime = hRunningController.agroEcoSystem.Crop_Part.Individual_Plant.Ph_Time
-    # RefreshVisualDate(cDate, bTime) # TODO
+    RefreshVisualDate(cDate, bTime)
     result = hRunningController.technologyDescriptor.Harvesting_Regime.stepoAct(hRunningController.agroEcoSystem)
 
-    print('Step19')
+    pretty_print('Step19')
     TextOutput(hRunningController.agroEcoSystem, False)
+
+    return result
 
 
 if __name__ == '__main__':
@@ -156,6 +175,6 @@ if __name__ == '__main__':
     agroEcoSystem = TAgroEcoSystem(airPart)
     technologyDescriptor = TTechnologyDescriptor()
     weatherControler = TWeatherController()
-    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, TWeatherController)
+    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, weatherControler)
 
     ContinousRunning(hRunningController=hRunningController)

@@ -1,5 +1,5 @@
 # TODO check classes
-
+from agrotool_lib.DebugInspector import whoami
 from .OwningElement import OwningElement
 
 
@@ -15,6 +15,7 @@ class TWeatherRecord():
         self.Kex = 0
 
     def Delete(self):
+        print("%s.%s is a stub" % (type(self).__name__, whoami()))
         pass
 
 
@@ -46,4 +47,5 @@ class TAgroEcoSystem():
         self.Crop_Part = TCrop_Part()
 
     def refreshing(self):
+        print("%s.%s is a stub" % (type(self).__name__, whoami()))
         pass

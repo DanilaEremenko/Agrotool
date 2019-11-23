@@ -2,6 +2,7 @@
 
 from .TAgroEcoSystem import TAgroEcoSystem
 from .TTechnologyDescriptor import TTechnologyDescriptor
+from .TWeatherController import TWeatherController
 
 
 class TRunController():
@@ -10,7 +11,7 @@ class TRunController():
 
     def __init__(self, agroEcoSystem: TAgroEcoSystem,
                  technologyDescriptor: TTechnologyDescriptor,
-                 weatherController):
+                 weatherController: TWeatherController):
         self.agroEcoSystem = agroEcoSystem
         self.technologyDescriptor = technologyDescriptor
         self.weatherController = weatherController
