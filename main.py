@@ -36,15 +36,17 @@ def RefreshVisualDate(cDate, bTime):
 
 def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
-    while OneStep(hRunningController):
-        continue
+    for day in hRunningController.weatherMap.keys():
+        print("____________\n____________\n DAY = %d\n____________\n____________\n" % day)
+        OneStep(hRunningController)
+        # TODO add step by fixed time delta and split dayily operation
 
 
 def OneStep(hRunningController: TRunController):
     fcount = 0
     pretty_print('Step1')
     # Один шаг модели за текущее число
-    cWR = hRunningController.agroEcoSystem.Air_Part.currentEnv
+    cWR = hRunningController.get_curr_wr()
     cDate = cWR.date
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
@@ -137,15 +139,14 @@ def OneStep(hRunningController: TRunController):
     # Очистка внешнего окружения
     lastWR = hRunningController.agroEcoSystem.Air_Part.currentEnv.__copy__()
     # Получение нового состояния
-    cWR = hRunningController.weatherController.GetMeteoData(0, cDate)
+    hRunningController.inc_day()
+    cWR = hRunningController.get_curr_wr()
 
     if cWR is not None:
         # Увеличение какого - то счетчика
         fcount = fcount + 1
         if fcount > MAX_COUNT:  # (true) Этот счетчик больше критического
-            result = True
-            return result
-
+            return True
     else:
         lastWR.Date = cDate
         cWR = lastWR
@@ -163,25 +164,12 @@ def OneStep(hRunningController: TRunController):
     return result
 
 
-def parse_weather_json(json_file):
-    with open(json_file) as json_data:
-        weather_map = json.load(json_data)
-    return weather_map["Weather"]["1"]
-
-
 if __name__ == '__main__':
-    weather_map = parse_weather_json("environments/test_weather.json")
-    currentEnv = TWeatherRecord(date=TDate(1),
-                                prec=weather_map["Prec"],
-                                tmin=weather_map["Tmin"],
-                                tmax=weather_map["Tmax"],
-                                kex=weather_map["Kex"],
-                                isSomething=False,
-                                watering=0)  # TODO watering
-    airPart = TAirPart(currentEnv)
+    weatherMap = TWeatherRecord.get_map_from_json("environments/test_weather.json")
+    airPart = TAirPart()
     agroEcoSystem = TAgroEcoSystem(airPart)
     technologyDescriptor = TTechnologyDescriptor()
     weatherControler = TWeatherController()
-    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, weatherControler, currentEnv)
+    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, weatherControler, weatherMap)
 
     ContinousRunning(hRunningController=hRunningController)
