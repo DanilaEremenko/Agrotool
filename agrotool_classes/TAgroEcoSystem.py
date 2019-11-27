@@ -2,6 +2,7 @@
 from agrotool_lib.DebugInspector import whoami
 from .TDate import TDate
 import copy
+import json
 
 
 class TWeatherRecord():
@@ -18,12 +19,27 @@ class TWeatherRecord():
     def __copy__(self):
         return copy.deepcopy(self)
 
+    @staticmethod
+    def get_map_from_json(json_file):
+        with open(json_file) as json_data:
+            json_data = json.load(json_data)
+        json_data = json_data["Weather"]
+        weather_map = {}
+        for key in json_data.keys():
+            weather_map[int(key)] = TWeatherRecord(date=TDate(1),
+                                                   prec=json_data[key]["Prec"],
+                                                   tmin=json_data[key]["Tmin"],
+                                                   tmax=json_data[key]["Tmax"],
+                                                   kex=json_data[key]["Kex"],
+                                                   isSomething=False,
+                                                   watering=0)  # TODO watering
+        return weather_map
+
 
 # ------------------------------- Environment parts --------------------------------------------
 class TAirPart():
-    def __init__(self, currentEnv: TWeatherRecord):
-        self.currentEnv = currentEnv
-        self.sumSnow = 100  # TODO
+    def __init__(self):
+        self.sumSnow = 0  # TODO
         self.alpha_snow = 0
         self.sumTrans = 0
         self.sumPrec = 0
