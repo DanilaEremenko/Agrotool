@@ -1,8 +1,10 @@
-from agrotool_classes.OwningElement import OwningElement
+import json
+
 from agrotool_classes.TAgroEcoSystem import TAgroEcoSystem, TAirPart, TWeatherRecord
 from agrotool_classes.TRunController import TRunController
 from agrotool_classes.TTechnologyDescriptor import TTechnologyDescriptor
 from agrotool_classes.TWeatherController import TWeatherController
+from agrotool_classes.TDate import TDate
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
 from agrotool_lib.RadPhot import RadPhotosynthesis
@@ -47,6 +49,8 @@ def OneStep(hRunningController: TRunController):
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
 
+    # ------------------------------ day step -----------------------------------------------------------
+    # if :
     pretty_print('Step2')
     # Утренние технологические операции
     hRunningController.technologyDescriptor.Irrigation_Regime.stepoAct(hRunningController.agroEcoSystem)
@@ -82,7 +86,6 @@ def OneStep(hRunningController: TRunController):
     hRunningController.agroEcoSystem.Air_Part.sumTrans = hRunningController.agroEcoSystem.Air_Part.sumTrans \
                                                          + hRunningController.agroEcoSystem.Crop_Part.Eplant \
                                                          + hRunningController.agroEcoSystem.Crop_Part.Esoil
-    x0 = hRunningController.agroEcoSystem.Air_Part.sumTrans
 
     hRunningController.agroEcoSystem.Air_Part.sumPrec = hRunningController.agroEcoSystem.Air_Part.sumPrec \
                                                         + cWR.Prec \
@@ -129,18 +132,10 @@ def OneStep(hRunningController: TRunController):
 
     pretty_print('Step17')
     # Перевод даты на утро следующего дня
-    cDate = cDate + 1  # TODO шаг?
+    cDate.inc_day()  # TODO шаг?
 
     # Очистка внешнего окружения
-    lastWR = TWeatherRecord(hRunningController.agroEcoSystem.Air_Part.currentEnv.OwningElement, False)
-    lastWR.Date = hRunningController.agroEcoSystem.Air_Part.currentEnv.date
-    lastWR.Tmin = hRunningController.agroEcoSystem.Air_Part.currentEnv.Tmin
-    lastWR.Tmax = hRunningController.agroEcoSystem.Air_Part.currentEnv.Tmax
-    lastWR.Prec = hRunningController.agroEcoSystem.Air_Part.currentEnv.Prec
-    lastWR.Tave = hRunningController.agroEcoSystem.Air_Part.currentEnv.Tave
-    lastWR.Kex = hRunningController.agroEcoSystem.Air_Part.currentEnv.Kex
-    lastWR.Watering = 0.0
-    hRunningController.agroEcoSystem.Air_Part.currentEnv.Delete()
+    lastWR = hRunningController.agroEcoSystem.Air_Part.currentEnv.__copy__()
     # Получение нового состояния
     cWR = hRunningController.weatherController.GetMeteoData(0, cDate)
 
@@ -168,13 +163,25 @@ def OneStep(hRunningController: TRunController):
     return result
 
 
+def parse_weather_json(json_file):
+    with open(json_file) as json_data:
+        weather_map = json.load(json_data)
+    return weather_map["Weather"]["1"]
+
+
 if __name__ == '__main__':
-    owningElement = OwningElement()
-    currentEnv = TWeatherRecord(owningElement, False)
+    weather_map = parse_weather_json("environments/test_weather.json")
+    currentEnv = TWeatherRecord(date=TDate(1),
+                                prec=weather_map["Prec"],
+                                tmin=weather_map["Tmin"],
+                                tmax=weather_map["Tmax"],
+                                kex=weather_map["Kex"],
+                                isSomething=False,
+                                watering=0)  # TODO watering
     airPart = TAirPart(currentEnv)
     agroEcoSystem = TAgroEcoSystem(airPart)
     technologyDescriptor = TTechnologyDescriptor()
     weatherControler = TWeatherController()
-    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, weatherControler)
+    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, weatherControler, currentEnv)
 
     ContinousRunning(hRunningController=hRunningController)

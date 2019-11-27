@@ -5,7 +5,7 @@ import numpy as np
 def popov_melting(cSystem: TAgroEcoSystem):
     asn = bsn = 1  # TODO what are these constants?
     cWR = cSystem.Air_Part.currentEnv
-    cs = "%d" % cWR.date
+    print("date = %s" % cWR.date.__str__())
     Tave = cWR.Tave
     Tmax = cWR.Tmax
     Tmin = cWR.Tmin
