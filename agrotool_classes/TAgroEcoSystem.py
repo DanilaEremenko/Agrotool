@@ -26,7 +26,7 @@ class TWeatherRecord():
         json_data = json_data["Weather"]
         weather_map = {}
         for key in json_data.keys():
-            weather_map[int(key)] = TWeatherRecord(date=TDate(1),
+            weather_map[int(key)] = TWeatherRecord(date=TDate(days=int(key)),
                                                    prec=json_data[key]["Prec"],
                                                    tmin=json_data[key]["Tmin"],
                                                    tmax=json_data[key]["Tmax"],
