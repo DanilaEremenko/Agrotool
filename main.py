@@ -5,7 +5,7 @@ from agrotool_classes.TRunController import TRunController
 from agrotool_classes.TTechnologyDescriptor import TTechnologyDescriptor
 from agrotool_classes.TWeatherController import TWeatherController
 from agrotool_classes.TDate import TDate
-from agrotool_classes.TWeatherHistory import TWeatherHistory
+from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
 from agrotool_lib.RadPhot import RadPhotosynthesis
@@ -39,13 +39,13 @@ def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     weatherHistory = TWeatherHistory()
     for day in hRunningController.weatherMap.keys():
-        weatherHistory.append(OneDayStep(hRunningController, day))
+        weatherHistory.append_day(day, OneDayStep(hRunningController, day))
+    weatherHistory.show_day(key=day)
 
 
-def OneDayStep(hRunningController: TRunController, currentDay):
+def OneDayStep(hRunningController: TRunController, currentDay, timeDelta=TDate(hours=1)):
     print("____________\n____________\n DAY = %d\n____________\n____________\n" % currentDay)
-    currWeatherHistory = TWeatherHistory()
-    fcount = 0
+    dayWeatherHistory = DayWeather()
     pretty_print('Step1')
     # Один шаг модели за текущее число
     cWR = hRunningController.weatherMap[currentDay]
@@ -53,10 +53,23 @@ def OneDayStep(hRunningController: TRunController, currentDay):
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
     timeForDailyOperation = TDate(hours=12)
-    timeDelta = TDate(hours=12)
+    KexBound = (TDate(hours=12), TDate(hours=24))
+    KexCurr = 0
+    stepNum = TDate(days=1).date / timeDelta.date
+    Tcurr = cWR.Tmin
+    Tstep = (cWR.Tmax - cWR.Tmin) / stepNum
     # ------------------------------ day step -----------------------------------------------------------
-    # daily operation check
+    # Delta loop
+    i = 0  # TODO delete
     while cDate.get_day() == currentDay:
+
+        # Kex calculating
+        if cDate.get_hour() > KexBound[0].get_hour() and cDate.get_hour() > KexBound[1].get_hour():
+            KexCurr = 1
+        else:
+            KexCurr = 0
+
+        # Daily operation check
         pretty_print('Step2')
         if cDate.get_hour() == timeForDailyOperation.get_hour():
             # Утренние технологические операции
@@ -141,20 +154,8 @@ def OneDayStep(hRunningController: TRunController, currentDay):
         TextOutput(hRunningController.agroEcoSystem, False)
 
         pretty_print('Step17')
-        # Перевод даты на утро следующего дня
-        # Очистка внешнего окружения
-        lastWR = hRunningController.agroEcoSystem.Air_Part.currentEnv.__copy__()
-        # Получение нового состояния
+        # Временной шаг
         cDate.date += timeDelta.date
-
-        if cWR is not None:
-            # Увеличение какого - то счетчика
-            fcount = fcount + 1
-            if fcount > MAX_COUNT:  # (true) Этот счетчик больше критического
-                continue
-        else:
-            lastWR.Date = cDate
-            cWR = lastWR
 
         pretty_print('Step18')
         # Его присвоение
@@ -165,7 +166,12 @@ def OneDayStep(hRunningController: TRunController, currentDay):
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-    return currWeatherHistory
+        # TODO append current data to history
+        dayWeatherHistory.append(KexCurr, Tcurr, i)
+        i += 1
+        Tcurr += Tstep
+
+    return dayWeatherHistory
 
 
 if __name__ == '__main__':

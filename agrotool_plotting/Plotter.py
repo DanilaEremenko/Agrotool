@@ -2,13 +2,11 @@ import matplotlib.pyplot as plt
 
 
 class PlotContainer():
-    def __init__(self, x, y, title=None):
+    def __init__(self, x, y, title="No title", divisor="-."):
         self.x = x
         self.y = y
-        if title == None:
-            self.title = "No title"
-        else:
-            self.title = title
+        self.title = title
+        self.divisor = divisor
 
 
 class Plotter():
@@ -25,7 +23,7 @@ class Plotter():
     def get_joined_figure(plt_containers_list):
         fig, axs = plt.subplots(len(plt_containers_list))
         for ax, splt in zip(axs, plt_containers_list):
-            ax.plot(splt.x, splt.y)
+            ax.plot(splt.y, splt.x, splt.divisor)
             ax.set_title(splt.title)
 
         return fig
