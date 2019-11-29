@@ -1,12 +1,17 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 
 class PlotContainer():
-    def __init__(self, x, y, title="No title", divisor="-."):
+    def __init__(self, x=np.empty(0), y=np.empty(0), title="No title", divisor="-."):
         self.x = x
         self.y = y
         self.title = title
         self.divisor = divisor
+
+    def append(self, x, y):
+        self.x = np.append(self.x, x)
+        self.y = np.append(self.y, y)
 
 
 class Plotter():
@@ -23,7 +28,7 @@ class Plotter():
     def get_joined_figure(plt_containers_list):
         fig, axs = plt.subplots(len(plt_containers_list))
         for ax, splt in zip(axs, plt_containers_list):
-            ax.plot(splt.y, splt.x, splt.divisor)
+            ax.plot(splt.x, splt.y, splt.divisor)
             ax.set_title(splt.title)
 
         return fig

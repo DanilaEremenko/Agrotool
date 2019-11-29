@@ -1,5 +1,3 @@
-import json
-
 from agrotool_classes.TAgroEcoSystem import TAgroEcoSystem, TAirPart, TWeatherRecord
 from agrotool_classes.TRunController import TRunController
 from agrotool_classes.TTechnologyDescriptor import TTechnologyDescriptor
@@ -39,11 +37,11 @@ def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     weatherHistory = TWeatherHistory()
     for day in hRunningController.weatherMap.keys():
-        weatherHistory.append_day(day, OneDayStep(hRunningController, day))
-    weatherHistory.show_day(key=day)
+        weatherHistory.append_day(day, OneDayStep(hRunningController, day, timeDelta=TDate(hours=2)))
+    weatherHistory.show_all_days()
 
 
-def OneDayStep(hRunningController: TRunController, currentDay, timeDelta=TDate(hours=1)):
+def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate):
     print("____________\n____________\n DAY = %d\n____________\n____________\n" % currentDay)
     dayWeatherHistory = DayWeather()
     pretty_print('Step1')
@@ -56,15 +54,16 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta=TDate(h
     KexBound = (TDate(hours=12), TDate(hours=24))
     KexCurr = 0
     stepNum = TDate(days=1).date / timeDelta.date
+    timeStep = 24 / stepNum
     Tcurr = cWR.Tmin
     Tstep = (cWR.Tmax - cWR.Tmin) / stepNum
     # ------------------------------ day step -----------------------------------------------------------
     # Delta loop
-    i = 0  # TODO delete
+    i = 0
     while cDate.get_day() == currentDay:
 
         # Kex calculating
-        if cDate.get_hour() > KexBound[0].get_hour() and cDate.get_hour() > KexBound[1].get_hour():
+        if cDate.get_hour() >= KexBound[0].get_hour() and cDate.get_hour() >= KexBound[1].get_hour():
             KexCurr = 1
         else:
             KexCurr = 0
@@ -166,9 +165,8 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta=TDate(h
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        # TODO append current data to history
         dayWeatherHistory.append(KexCurr, Tcurr, i)
-        i += 1
+        i += timeStep
         Tcurr += Tstep
 
     return dayWeatherHistory

@@ -24,10 +24,22 @@ class TWeatherHistory():
     def show_day(self, key):
         day_weather = self.days_weather[key]
         plt_containers = [
-            PlotContainer(day_weather.kList, day_weather.deltaList, divisor='.', title="%d KHistory" % key),
-            PlotContainer(day_weather.tList, day_weather.deltaList, divisor='.', title="%d THistory" % key)
+            PlotContainer(day_weather.deltaList, day_weather.kList, divisor='.', title="%d KHistory" % key),
+            PlotContainer(day_weather.deltaList, day_weather.tList, divisor='.', title="%d THistory" % key)
         ]
 
         full_figure = Plotter.get_joined_figure(plt_containers_list=plt_containers)
+
+        full_figure.show()
+
+    def show_all_days(self):
+        k_container = PlotContainer(title="Full Kex history")
+        t_container = PlotContainer(title="Full T history")
+        time_shift = 0
+        for day_num, day_weather in zip(self.days_weather.keys(), self.days_weather.values()):
+            k_container.append(x=day_weather.deltaList + time_shift, y=day_weather.kList)
+            t_container.append(x=day_weather.deltaList + time_shift, y=day_weather.tList)
+            time_shift += 24
+        full_figure = Plotter.get_joined_figure(plt_containers_list=[k_container, t_container])
 
         full_figure.show()
