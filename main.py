@@ -173,7 +173,7 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
 
 
 if __name__ == '__main__':
-    weatherMap = TWeatherRecord.get_map_from_json("environments/test_weather.json")
+    weatherMap = TWeatherRecord.get_map_from_json("environments/test_1/weather.json")
     airPart = TAirPart()
     agroEcoSystem = TAgroEcoSystem(airPart)
     technologyDescriptor = TTechnologyDescriptor()

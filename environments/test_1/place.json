@@ -1,0 +1,28 @@
+{
+  "Place": {
+    "MeteoStation": {
+      "NAME": "Белогорка",
+      "LATITUDE": 59.35,
+      "LONGTITUDE": 30.13,
+      "ALTITUDE": 0.00,
+      "H_FLUG": 700.00,
+      "H_METEO": 200.00,
+      "MAX_RSHPLANT": 400.00,
+      "T_AVG_YEAR": 4.00
+    },
+    "Region": {
+      "NAME": "Меньково",
+      "LATITUDE": 59.42,
+      "LONGTITUDE": 30.03,
+      "ALTITUDE": 0.00,
+      "CO2Concentration": 7.00
+    },
+    "Area": {
+      "REL_X": 0.00,
+      "REL_Y": 0.00,
+      "REL_Z": 0.00,
+      "SLOPE_AZIMUTH": 0.00,
+      "SLOPE_STEEP": 0.00
+    }
+  }
+}
