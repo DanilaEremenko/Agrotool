@@ -43,6 +43,7 @@ class TAirPart():
         self.alpha_snow = 0
         self.sumTrans = 0
         self.sumPrec = 0
+        self.SumRad = 0
 
 
 class TIndividualtPlant():
@@ -55,6 +56,8 @@ class TCrop_Part():
     def __init__(self):
         self.Esoil = 0
         self.Eplant = 0
+        self.RshPlant = 0
+        self.copr = 0
         self.Individual_Plant = TIndividualtPlant()
 
 
@@ -70,6 +73,7 @@ class TAgroEcoSystem():
         self.Air_Part = Air_Part
         self.Crop_Part = TCrop_Part()
         self.Soil_Part = TSoil_Part()
+        self.RunController = None
 
     def refreshing(self):
         print("%s.%s is a stub" % (type(self).__name__, whoami()))

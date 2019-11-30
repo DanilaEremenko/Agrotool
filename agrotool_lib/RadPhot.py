@@ -1,8 +1,10 @@
 # TODO check functions
 from agrotool_lib.DebugInspector import whoami
+from agrotool_lib.RadiationAstronomy import _DayLength
 from .RadiationAstronomy import *
 from numpy import exp, sqrt, sin, cos, pi
 from .PhysicalConstants import RConst1, RConst2, RConst3
+
 
 def RadPhotosynthesis(cSystem, isBio):
     LAI_levels = []
@@ -98,22 +100,22 @@ def RadPhotosynthesis(cSystem, isBio):
     # 1. Коротковолновые составлящие суточного радиационного баланса для почвы и верхней кромки посева
     # 2. Суточный фотосинтез посева (прирост углеродных ассимилятов)
     # Берем широту
-    fi = cSystem.RunController.MeasurementUnit.Latitude
-    dl = cSystem.Air_Part.DayLength
+    Iday = cSystem.RunController.getCurrentDay().date.date.days
+    fi = cSystem.RunController.measurementUnit.Latitude
+    dl = _DayLength(fi, Iday)
     # Переводим широту в радианы
     FiRad = fi * pi / 180
     # Берем коэффициент ослабления радиации
     Kex = cSystem.Air_Part.currentEnv.Kex
     # Вычисляем номер дня
 
-    Iday = cSystem.Air_Part.currentEnv.Date
     # Годовой угол
     sd = 0.4102 * sin(0.0172 * (Iday - 80.25))
     # Константы суточного хода Солнца
     b1 = sin(FiRad) * sin(sd)
     b2 = cos(FiRad) * cos(sd)
-    slope_psi = cSystem.RunController.MeasurementUnit.SlopeAzimuth * pi / 180
-    slope_al = cSystem.RunController.MeasurementUnit.SlopeSteepness * pi / 180
+    slope_psi = cSystem.RunController.measurementUnit.SlopeAzimuth * pi / 180
+    slope_al = cSystem.RunController.measurementUnit.SlopeSteepness * pi / 180
     hour1 = 12 - dl / 2
     TotalFluxRad = 0.0
 
@@ -133,7 +135,7 @@ def RadPhotosynthesis(cSystem, isBio):
     PhMax = PhMax * FStr(Tave)
     Dresp = PhMax * cSystem.Crop_Part.Individual_Plant.Culture_Descriptor.Photosynthesis_Type_Descriptor.CExpen
 
-    co2 = cSystem.RunController.MeasurementUnit.CO2Conc
+    co2 = cSystem.RunController.measurementUnit.CO2Conc
 
     # Брнофигня
     # co2 = CO2Increas(co2, false)

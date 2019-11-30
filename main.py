@@ -1,5 +1,5 @@
 from agrotool_classes.TAgroEcoSystem import TAgroEcoSystem, TAirPart, TWeatherRecord
-from agrotool_classes.TRunController import TRunController
+from agrotool_classes.TRunController import TRunController, Measurements
 from agrotool_classes.TTechnologyDescriptor import TTechnologyDescriptor
 from agrotool_classes.TWeatherController import TWeatherController
 from agrotool_classes.TDate import TDate
@@ -51,8 +51,6 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
     timeForDailyOperation = TDate(hours=12)
-    KexBound = (TDate(hours=12), TDate(hours=24))
-    KexCurr = 0
     stepNum = TDate(days=1).date / timeDelta.date
     timeStep = 24 / stepNum
     Tcurr = cWR.Tmin
@@ -61,12 +59,6 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
     # Delta loop
     i = 0
     while cDate.get_day() == currentDay:
-
-        # Kex calculating
-        if cDate.get_hour() >= KexBound[0].get_hour() and cDate.get_hour() >= KexBound[1].get_hour():
-            KexCurr = 1
-        else:
-            KexCurr = 0
 
         # Daily operation check
         pretty_print('Step2')
@@ -93,7 +85,15 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
 
         pretty_print('Step6')
         # Радиация и фотосинтез(с потенциальным сопротивлением устьиц)
+        # Запоминаем приходящщу радиацию
+        print("BEFORE:Air.SumRad = %d" % hRunningController.agroEcoSystem.Air_Part.SumRad)
+        print("BEFORE:Crop.RshPlant = %d" % hRunningController.agroEcoSystem.Crop_Part.RshPlant)
+        print("BEFORE:Crop.corp = %d" % hRunningController.agroEcoSystem.Crop_Part.copr)
+        # Запоминаем почвенну радиацию
         RadPhotosynthesis(hRunningController.agroEcoSystem, False)
+        print("AFTER:Air.SumRad = %d" % hRunningController.agroEcoSystem.Air_Part.SumRad)
+        print("AFTER:Crop.RshPlant = %d" % hRunningController.agroEcoSystem.Crop_Part.RshPlant)
+        print("AFTER:Crop.corp = %d" % hRunningController.agroEcoSystem.Crop_Part.copr)
 
         pretty_print('Step7')
         # Водные потоки.Транспирация
@@ -165,7 +165,7 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        dayWeatherHistory.append(KexCurr, Tcurr, i)
+        dayWeatherHistory.append(hRunningController.agroEcoSystem.Air_Part.SumRad, Tcurr, i)
         i += timeStep
         Tcurr += Tstep
 
@@ -178,6 +178,11 @@ if __name__ == '__main__':
     agroEcoSystem = TAgroEcoSystem(airPart)
     technologyDescriptor = TTechnologyDescriptor()
     weatherControler = TWeatherController()
-    hRunningController = TRunController(agroEcoSystem, technologyDescriptor, weatherControler, weatherMap)
+    measurementUnit = Measurements(0, 0, 0, 0)
+    hRunningController = TRunController(agroEcoSystem=agroEcoSystem,
+                                        technologyDescriptor=technologyDescriptor,
+                                        weatherController=weatherControler,
+                                        weatherMap=weatherMap,
+                                        measurementUnit=measurementUnit)
 
     ContinousRunning(hRunningController=hRunningController)
