@@ -7,8 +7,6 @@ from .PhysicalConstants import RConst1, RConst2, RConst3
 
 
 def RadPhotosynthesis(cSystem, isBio):
-    LAI_levels = []
-
     def sleep(num):
         """
         TODO description, realization
@@ -91,6 +89,7 @@ def RadPhotosynthesis(cSystem, isBio):
         return result
 
     # ---------------------------- RadPhotosynthesis main --------------------------------------------
+    LAI_levels = []
     # Рассчитывает следующие переменные
     # 1. Коротковолновые составлящие суточного радиационного баланса для почвы и верхней кромки посева
     # 2. Суточный фотосинтез посева (прирост углеродных ассимилятов)
