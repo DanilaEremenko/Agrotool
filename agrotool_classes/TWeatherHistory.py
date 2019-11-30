@@ -33,8 +33,10 @@ class TWeatherHistory():
         full_figure.show()
 
     def show_all_days(self):
-        k_container = PlotContainer(title="Full Kex history")
-        t_container = PlotContainer(title="Full T history")
+        k_container = PlotContainer(title="Full Kex history", divisor='.-',
+                                    x_label="Day", y_label="K")
+        t_container = PlotContainer(title="Full T history", divisor='.-',
+                                    x_label="Day", y_label="T(°C)")
         time_shift = 0
         for day_num, day_weather in zip(self.days_weather.keys(), self.days_weather.values()):
             k_container.append(x=day_weather.deltaList + time_shift, y=day_weather.kList)
