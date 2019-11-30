@@ -1,7 +1,6 @@
-from agrotool_classes.TAgroEcoSystem import TAgroEcoSystem, TAirPart, TWeatherRecord
-from agrotool_classes.TRunController import TRunController, Measurements
-from agrotool_classes.TTechnologyDescriptor import TTechnologyDescriptor
-from agrotool_classes.TWeatherController import TWeatherController
+from agrotool_classes.TAgroEcoSystem import TWeatherRecord
+from agrotool_classes.TRunController import TRunController
+
 from agrotool_classes.TDate import TDate
 from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
@@ -174,15 +173,6 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
 
 if __name__ == '__main__':
     weatherMap = TWeatherRecord.get_map_from_json("environments/test_1/weather.json")
-    airPart = TAirPart()
-    agroEcoSystem = TAgroEcoSystem(airPart)
-    technologyDescriptor = TTechnologyDescriptor()
-    weatherControler = TWeatherController()
-    measurementUnit = Measurements(0, 0, 0, 0)
-    hRunningController = TRunController(agroEcoSystem=agroEcoSystem,
-                                        technologyDescriptor=technologyDescriptor,
-                                        weatherController=weatherControler,
-                                        weatherMap=weatherMap,
-                                        measurementUnit=measurementUnit)
+    hRunningController = TRunController(weatherMap=weatherMap)
 
     ContinousRunning(hRunningController=hRunningController)

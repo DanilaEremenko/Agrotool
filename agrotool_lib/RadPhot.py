@@ -1,5 +1,4 @@
 # TODO check functions
-from agrotool_lib.DebugInspector import whoami
 from agrotool_lib.RadiationAstronomy import _DayLength
 from .RadiationAstronomy import *
 from numpy import exp, sqrt, sin, cos, pi
