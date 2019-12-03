@@ -5,7 +5,7 @@ from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
 from agrotool_lib.RadPhot import RadPhotosynthesis
-from agrotool_lib.RadiationAstronomy import GetCurrSumRad
+from agrotool_lib.RadiationAstronomy import GetCurrSumRad, _DayLength
 from agrotool_lib.WaterSoilDynamics import WaterSoilDynamics
 from agrotool_lib.Development import RecalculateBioTime
 from agrotool_lib.NitBal import RecalculateSoilNitrogen
@@ -37,33 +37,61 @@ def RefreshVisualDate(cDate, bTime):
 def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     weatherHistory = TWeatherHistory()
+    weatherIter = iter(hRunningController.weatherList)
+    weatherIter.__next__()
     for cWR in hRunningController.weatherList:
-        weatherHistory.append_day(cWR, OneDayStep(hRunningController, cWR, timeDelta=timedelta(hours=1)))
+        try:  # nextWR necessary in OneDayStep
+            nextWR = weatherIter.__next__()
+        except StopIteration:  # for last day
+            nextWR = cWR.__copy__()
+            nextWR.date += timedelta(days=1)
+        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
+                                                  cWR, nextWR,
+                                                  stepTimeDelta=timedelta(hours=1)))
+
     weatherHistory.show_all_days()
 
 
-def OneDayStep(hRunningController: TRunController, cWR: TWeatherRecord, timeDelta: timedelta):
+def OneDayStep(hRunningController: TRunController,
+               cWR: TWeatherRecord,
+               nextWR: TWeatherRecord,
+               stepTimeDelta: timedelta):
     print("____________\n____________\n DAY = %s\n____________\n____________\n" % cWR.date.__str__())
     dayWeatherHistory = DayWeather()
     pretty_print('Step1')
     # Один шаг модели за текущее число
-    cDate = cWR.date
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
     timeForDailyOperation = timedelta(hours=12)
-    stepNum = timedelta(days=1) / timeDelta
-    timeStep = 24 / stepNum
-    Tcurr = cWR.Tmin
-    Tstep = (cWR.Tmax - cWR.Tmin) / stepNum
+
     fi = hRunningController.measurementUnit.Latitude
+    currDayLength = _DayLength(fi, cWR.date)
+    nextDayLength = _DayLength(fi, nextWR.date)
+    hourCurrSunrise = int(14 - currDayLength / 2)
+    hourNextSunrise = int(14 - nextDayLength / 2)
+
+    cDateTime = datetime(year=cWR.date.year,  # calculate from sunrise to sunrise of next day
+                         month=cWR.date.month,
+                         day=cWR.date.day,
+                         hour=hourCurrSunrise)
+    currFinish = datetime(year=nextWR.date.year,
+                          month=nextWR.date.month,
+                          day=nextWR.date.day,
+                          hour=hourNextSunrise)
+
+    temp_increase = (cWR.Tmax - cWR.Tmin) / (timedelta(
+        hours=currDayLength / 2) / stepTimeDelta)
+    temp_decrease = (cWR.Tmax - nextWR.Tmin) / (timedelta(
+        hours=24 - currDayLength / 2) / stepTimeDelta)
+    Tcurr = cWR.Tmin
+
     # ------------------------------ day step -----------------------------------------------------------
     # Delta loop
-    i = 0
-    while cDate.day == cWR.date.day:
+    while cDateTime < currFinish:
 
         # Daily operation check
         pretty_print('Step2')
-        if cDate.second / 60 == timeForDailyOperation.seconds / 60:
+        if cDateTime.second / 60 == timeForDailyOperation.seconds / 60:
             # Утренние технологические операции
             hRunningController.technologyDescriptor.Irrigation_Regime.stepoAct(hRunningController.agroEcoSystem)
             hRunningController.technologyDescriptor.Fertilization_Regime.stepoAct(hRunningController.agroEcoSystem)
@@ -92,7 +120,7 @@ def OneDayStep(hRunningController: TRunController, cWR: TWeatherRecord, timeDelt
         print("BEFORE:Crop.corp = %d" % hRunningController.agroEcoSystem.Crop_Part.copr)
         # Запоминаем почвенну радиацию
         # RadPhotosynthesis(hRunningController.agroEcoSystem, False)#TODO
-        hRunningController.agroEcoSystem.Air_Part.SumRad = GetCurrSumRad(fi, cDate, timeDelta)
+        hRunningController.agroEcoSystem.Air_Part.SumRad = GetCurrSumRad(fi, cDateTime, stepTimeDelta)
         print("AFTER:Air.SumRad = %d" % hRunningController.agroEcoSystem.Air_Part.SumRad)
         print("AFTER:Crop.RshPlant = %d" % hRunningController.agroEcoSystem.Crop_Part.RshPlant)
         print("AFTER:Crop.corp = %d" % hRunningController.agroEcoSystem.Crop_Part.copr)
@@ -156,24 +184,30 @@ def OneDayStep(hRunningController: TRunController, cWR: TWeatherRecord, timeDelt
 
         pretty_print('Step17')
         # Временной шаг
-        cDate += timeDelta
+        cDateTime += stepTimeDelta
 
         pretty_print('Step18')
         # Его присвоение
         hRunningController.agroEcoSystem.Air_Part.currentEnv = cWR
         bTime = hRunningController.agroEcoSystem.Crop_Part.Individual_Plant.Ph_Time
-        RefreshVisualDate(cDate, bTime)
+        RefreshVisualDate(cDateTime, bTime)
 
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        dayWeatherHistory.append(
-            Rad=hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / timeDelta.seconds,
-            T=Tcurr,
-            delta=i)
-        i += timeStep
-        Tcurr += Tstep
+        delta = cDateTime.hour + cDateTime.minute / 60
+        if cDateTime.day != cWR.date.day:
+            delta += 24
 
+        dayWeatherHistory.append(
+            Rad=hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds,
+            T=Tcurr,
+            delta=delta)
+
+        if cDateTime.hour < 14 and cDateTime.day == cWR.date.day:
+            Tcurr += temp_increase
+        else:
+            Tcurr -= temp_decrease
     return dayWeatherHistory
 
 

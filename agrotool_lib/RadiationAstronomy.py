@@ -54,13 +54,13 @@ def AQR_SLOPE(hour, fir, sd, psin, al):
     return (SolarConst / 4.187) * 60 * cosi
 
 
-def _DayLength(fi, cDate):
+def _DayLength(fi, cDate: datetime):
     # Calculate value into Result and place the required subscriptions
     # Вычисляет длину дня по широте и дате
     # Переводим широту в радианы
     FiRad = fi * pi / 180
     # Вычисляем номер дня
-    Iday = cDate  # TODO day of the year
+    Iday = cDate.today().timetuple().tm_yday  # TODO day of the year
     # Годовой угол
     sd = 0.4102 * sin(0.0172 * (Iday - 80.25))
     # Момент восхода
