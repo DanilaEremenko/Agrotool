@@ -204,7 +204,7 @@ def OneDayStep(hRunningController: TRunController,
             T=Tcurr,
             delta=delta)
 
-        if cDateTime.hour < 14 and cDateTime.day == cWR.date.day:
+        if cDateTime.hour <= 14 and cDateTime.day == cWR.date.day:  # TODO works incorrect for step < hour
             Tcurr += temp_increase
         else:
             Tcurr -= temp_decrease
