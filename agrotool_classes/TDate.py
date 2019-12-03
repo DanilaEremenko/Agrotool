@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 
+# TODO
 class TDate():
     def __init__(self, seconds=0, minutes=0, hours=0, weeks=0, days=0):
         self.date = timedelta(seconds=seconds, minutes=minutes, hours=hours, weeks=weeks, days=days)
@@ -14,8 +15,15 @@ class TDate():
     def get_hour(self):
         return int(self.date.seconds / 60 / 60)
 
-    def get_day(self):
+    def get_day(self):  # TODO number of day of the year
         return int(self.date.days)
+
+    def get_seconds(self):
+        return int(self.date.seconds)
+
+    def __add__(self, other):
+        curDelta = self.date + other.date
+        return TDate(seconds=curDelta.seconds)
 
 
 if __name__ == '__main__':

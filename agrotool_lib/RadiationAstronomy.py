@@ -1,5 +1,6 @@
 from numpy import sin, cos, pi, arctan, sqrt, arccos
 from .PhysicalConstants import SolarConst
+from agrotool_classes.TDate import TDate
 
 
 def sinhour(hour, b1, b2):
@@ -13,7 +14,7 @@ def sinhour(hour, b1, b2):
 def AQR(shour):
     # Рассчитывает часовой поток приходящей к верхней границе атмосферы КВР
     # Часовой поток
-    return SolarConst / 4.187 * 60 * shour
+    return SolarConst / 60 * shour
 
 
 def AQR_SLOPE(hour, fir, sd, psin, al):
@@ -68,29 +69,31 @@ def _DayLength(fi, cDate):
     return 24 * aSunRise / pi
 
 
-def _SumRad(fi, cDate):
-    dl = _DayLength(fi, cDate)
+def GetCurrRad(fi, cDate: TDate):
     # Переводим широту в радианы
     FiRad = fi * pi / 180
     # Вычисляем номер дня
-    Iday = cDate  # TODO day of the year
+    Iday = cDate.get_day()  # TODO day of the year
     # Годовой угол
     sd = 0.4102 * sin(0.0172 * (Iday - 80.25))
-    # Константы суточного хода Солнца
+
     b1 = sin(FiRad) * sin(sd)
     b2 = cos(FiRad) * cos(sd)
-    hour1 = 12 - dl / 2
-    TotalFluxRad = 0.0
-    while (True):
-        hour2 = hour1 + 1
-        if (hour2 > 12 + dl / 2):
-            hour2 = 12 + dl / 2
-        shour1 = sinhour(hour1, b1, b2)
-        shour2 = sinhour(hour2, b1, b2)
-        cFluxRad = 0.5 * (AQR(shour1) + AQR(shour2)) * (hour2 - hour1)
-        TotalFluxRad = TotalFluxRad + cFluxRad
-        hour1 = hour2
-        if (hour2 >= 12 + dl / 2):
-            break
 
-    return TotalFluxRad
+    shour1 = sinhour(cDate.get_hour(), b1, b2)
+    return AQR(shour1) if shour1 > 0 else 0
+
+
+def GetCurrSumRad(fi, cDate, delta: TDate):
+    if delta.date.seconds < TDate(hours=1).date.seconds:
+        return GetCurrRad(fi, cDate) * delta.get_seconds()
+    else:
+        step_num = int(delta.get_hour() + 1)
+        delta_step = TDate(delta.date.seconds / step_num)
+
+        currDate = cDate + TDate(seconds=delta_step.date.seconds / 2)
+        sumRad = 0
+        for i in range(0, step_num):
+            sumRad += GetCurrRad(fi, currDate) * delta_step.get_seconds()
+            currDate += delta_step
+        return sumRad

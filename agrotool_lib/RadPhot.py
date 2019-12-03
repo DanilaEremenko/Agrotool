@@ -6,18 +6,8 @@ from .PhysicalConstants import RConst1, RConst2, RConst3
 
 
 def RadPhotosynthesis(cSystem, isBio):
-    def sleep(num):
-        """
-        TODO description, realization
-        :param num:
-        :return:
-        """
-        pass
-
     # Расчет коэффициента поглощения ФАР на глубине
     def AP(cLAI):
-        if (cLAI > 1e-8):
-            sleep(0)
         a = -RConst1 * cLAI / shour
         if a < -9.0: a = -9.0
         al = RConst2 * (exp(a * RConst3) - exp(a))
@@ -202,8 +192,6 @@ def RadPhotosynthesis(cSystem, isBio):
                 x2 = AP(LAI_levels[i])
                 # Доля поглощенной ФАР
                 x3 = x1 - x2
-                if x3 < 0:
-                    sleep(0)
                 # Поглощенная ФАР
                 RPH = cPharRad * x3
                 # Перекид для будущего
@@ -227,8 +215,7 @@ def RadPhotosynthesis(cSystem, isBio):
                         Brphot = Brphot + PhotLAI * xL
 
         PrimAss = PrimAss + Brphot
-        if Brphot > 0:
-            sleep(0)
+
         hour1 = hour2
         if (hour2 >= 12 + dl / 2 - 0.000001):
             break
