@@ -1,7 +1,6 @@
 from agrotool_classes.TAgroEcoSystem import TWeatherRecord
 from agrotool_classes.TRunController import TRunController
 
-from agrotool_classes.TDate import TDate
 from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
@@ -13,6 +12,8 @@ from agrotool_lib.NitBal import RecalculateSoilNitrogen
 from agrotool_lib.Growing import Growth
 from agrotool_lib.OutputData import TextOutput
 from agrotool_lib.Snowmelt import popov_melting
+
+from datetime import datetime, timedelta
 
 # const
 MAX_COUNT = 4  # // Максимальное количество "битых" погодных записей
@@ -36,22 +37,21 @@ def RefreshVisualDate(cDate, bTime):
 def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     weatherHistory = TWeatherHistory()
-    for day in hRunningController.weatherMap.keys():
-        weatherHistory.append_day(day, OneDayStep(hRunningController, day, timeDelta=TDate(hours=1)))
+    for cWR in hRunningController.weatherList:
+        weatherHistory.append_day(cWR, OneDayStep(hRunningController, cWR, timeDelta=timedelta(hours=1)))
     weatherHistory.show_all_days()
 
 
-def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate):
-    print("____________\n____________\n DAY = %d\n____________\n____________\n" % currentDay)
+def OneDayStep(hRunningController: TRunController, cWR: TWeatherRecord, timeDelta: timedelta):
+    print("____________\n____________\n DAY = %s\n____________\n____________\n" % cWR.date.__str__())
     dayWeatherHistory = DayWeather()
     pretty_print('Step1')
     # Один шаг модели за текущее число
-    cWR = hRunningController.weatherMap[currentDay]
     cDate = cWR.date
     Tave = cWR.Tave
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
-    timeForDailyOperation = TDate(hours=12)
-    stepNum = TDate(days=1).date / timeDelta.date
+    timeForDailyOperation = timedelta(hours=12)
+    stepNum = timedelta(days=1) / timeDelta
     timeStep = 24 / stepNum
     Tcurr = cWR.Tmin
     Tstep = (cWR.Tmax - cWR.Tmin) / stepNum
@@ -59,11 +59,11 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
     # ------------------------------ day step -----------------------------------------------------------
     # Delta loop
     i = 0
-    while cDate.get_day() == currentDay:
+    while cDate.day == cWR.date.day:
 
         # Daily operation check
         pretty_print('Step2')
-        if cDate.get_hour() == timeForDailyOperation.get_hour():
+        if cDate.second / 60 == timeForDailyOperation.seconds / 60:
             # Утренние технологические операции
             hRunningController.technologyDescriptor.Irrigation_Regime.stepoAct(hRunningController.agroEcoSystem)
             hRunningController.technologyDescriptor.Fertilization_Regime.stepoAct(hRunningController.agroEcoSystem)
@@ -156,7 +156,7 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
 
         pretty_print('Step17')
         # Временной шаг
-        cDate.date += timeDelta.date
+        cDate += timeDelta
 
         pretty_print('Step18')
         # Его присвоение
@@ -167,8 +167,10 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        dayWeatherHistory.append(hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / timeDelta.get_seconds(),
-                                 Tcurr, i)
+        dayWeatherHistory.append(
+            Rad=hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / timeDelta.seconds,
+            T=Tcurr,
+            delta=i)
         i += timeStep
         Tcurr += Tstep
 
@@ -176,7 +178,7 @@ def OneDayStep(hRunningController: TRunController, currentDay, timeDelta: TDate)
 
 
 if __name__ == '__main__':
-    weatherMap = TWeatherRecord.get_map_from_json("environments/test_1/weather.json")
-    hRunningController = TRunController(weatherMap=weatherMap)
+    weatherList = TWeatherRecord.get_list_from_json("environments/test_1/weather.json")
+    hRunningController = TRunController(weatherList=weatherList)
 
     ContinousRunning(hRunningController=hRunningController)

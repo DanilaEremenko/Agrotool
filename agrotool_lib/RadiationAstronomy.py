@@ -1,6 +1,6 @@
 from numpy import sin, cos, pi, arctan, sqrt, arccos
 from .PhysicalConstants import SolarConst
-from agrotool_classes.TDate import TDate
+from datetime import datetime, timedelta
 
 
 def sinhour(hour, b1, b2):
@@ -69,31 +69,31 @@ def _DayLength(fi, cDate):
     return 24 * aSunRise / pi
 
 
-def GetCurrRad(fi, cDate: TDate):
+def GetCurrRad(fi, cDate: datetime):
     # Переводим широту в радианы
     FiRad = fi * pi / 180
     # Вычисляем номер дня
-    Iday = cDate.get_day()  # TODO day of the year
+    Iday = cDate.timetuple().tm_yday  # TODO day of the year
     # Годовой угол
     sd = 0.4102 * sin(0.0172 * (Iday - 80.25))
 
     b1 = sin(FiRad) * sin(sd)
     b2 = cos(FiRad) * cos(sd)
 
-    shour1 = sinhour(cDate.get_hour(), b1, b2)
+    shour1 = sinhour(cDate.hour, b1, b2)
     return AQR(shour1) if shour1 > 0 else 0
 
 
-def GetCurrSumRad(fi, cDate, delta: TDate):
-    if delta.date.seconds < TDate(hours=1).date.seconds:
-        return GetCurrRad(fi, cDate) * delta.get_seconds()
+def GetCurrSumRad(fi, cDate, delta: timedelta):
+    if delta < timedelta(hours=1):
+        return GetCurrRad(fi, cDate) * delta.seconds
     else:
-        step_num = int(delta.get_hour() + 1)
-        delta_step = TDate(delta.date.seconds / step_num)
+        step_num = int(delta.seconds / 3600 + 1)
+        delta_step = timedelta(seconds=delta.seconds / step_num)
 
-        currDate = cDate + TDate(seconds=delta_step.date.seconds / 2)
+        currDate = cDate + timedelta(seconds=delta.seconds / 2)
         sumRad = 0
         for i in range(0, step_num):
-            sumRad += GetCurrRad(fi, currDate) * delta_step.get_seconds()
+            sumRad += GetCurrRad(fi, currDate) * delta_step.seconds
             currDate += delta_step
         return sumRad

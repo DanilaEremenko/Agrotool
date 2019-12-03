@@ -15,16 +15,16 @@ class Measurements():
 
 
 class TRunController():
-    def __init__(self, weatherMap: TWeatherRecord):
+    def __init__(self, weatherList: TWeatherRecord):
         self.agroEcoSystem = TAgroEcoSystem(TAirPart())
         self.agroEcoSystem.RunController = self
         self.technologyDescriptor = TTechnologyDescriptor()
         self.weatherController = TWeatherController()
         self.measurementUnit = Measurements(0, 0, 0, 0)
 
-        self.weatherMap = weatherMap
-        self.currDay = list(self.weatherMap.keys())[0]
-        self.agroEcoSystem.Air_Part.currentEnv = self.weatherMap[self.currDay]
+        self.weatherList = weatherList
+        self.currDay = 0
+        self.agroEcoSystem.Air_Part.currentEnv = self.weatherList[self.currDay]
 
     def getCurrentDay(self):
-        return self.weatherMap[self.currDay]
+        return self.weatherList[self.currDay]
