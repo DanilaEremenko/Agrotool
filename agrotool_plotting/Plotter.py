@@ -36,7 +36,7 @@ class Plotter():
             ax.set_ylabel(splt.y_label)
             ax.set_title(splt.title)
 
-        return fig
+        return fig, axs
 
 
 # --------------------- example of using ---------------------------------------

@@ -42,6 +42,12 @@ class TWeatherHistory():
             k_container.append(x=day_weather.deltaList + time_shift, y=day_weather.radList)
             t_container.append(x=day_weather.deltaList + time_shift, y=day_weather.tList)
             time_shift += 24
-        full_figure = Plotter.get_joined_figure(plt_containers_list=[k_container, t_container])
+        full_figure, axs = Plotter.get_joined_figure(plt_containers_list=[t_container, k_container])
+
+        # plotting dividing line after every day
+        while (time_shift > 0):
+            axs[0].plot((time_shift, time_shift), (0, 30), color='r')
+            time_shift -= 24
+        axs[0].set_ylim(min(t_container.y), max(t_container.y))
 
         full_figure.show()
