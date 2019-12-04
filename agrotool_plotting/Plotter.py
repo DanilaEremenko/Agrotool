@@ -3,11 +3,14 @@ import matplotlib.pyplot as plt
 
 
 class PlotContainer():
-    def __init__(self, x=np.empty(0), y=np.empty(0), title="No title", divisor="-."):
+    def __init__(self, x=np.empty(0), y=np.empty(0), title="No title", divisor="-/",
+                 x_label="No label", y_label="No label"):
         self.x = x
         self.y = y
         self.title = title
         self.divisor = divisor
+        self.x_label = x_label
+        self.y_label = y_label
 
     def append(self, x, y):
         self.x = np.append(self.x, x)
@@ -29,9 +32,11 @@ class Plotter():
         fig, axs = plt.subplots(len(plt_containers_list))
         for ax, splt in zip(axs, plt_containers_list):
             ax.plot(splt.x, splt.y, splt.divisor)
+            ax.set_xlabel(splt.x_label)
+            ax.set_ylabel(splt.y_label)
             ax.set_title(splt.title)
 
-        return fig
+        return fig, axs
 
 
 # --------------------- example of using ---------------------------------------
