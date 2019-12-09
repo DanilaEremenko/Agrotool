@@ -1,0 +1,73 @@
+{
+  "Culture": {
+    "BiomRD": {
+      "Y0": 1.150,
+      "Y5": 1.150,
+      "Y10": 1.150,
+      "KN_0": 2.500,
+      "KN_1": 5.000,
+      "KN_2": 7.000,
+      "KN_MAX": 25.000,
+      "Vmax_LATS": 2.3,
+      "Vmax_HATS": 1,
+      "Kmax_LATS": 0.07,
+      "Kmax_HATS": 0.00070,
+      "WP_LOW": -12000.00,
+      "NUptTh": 1.7
+    },
+    "LAIRD": {
+      "Kl_y_0": 0.695,
+      "Kl_y_1": 0.0634,
+      "Kl_y_2": -0.0021
+    },
+    "PlantArchitect": {
+      "Bm_wet_Bmdry": 1.00,
+      "Rcond": 0.5,
+      "Clst": 5,
+      "Hcmax": 60,
+      "HmaxR": 10,
+      "HminR": 6,
+      "Cleaf": 20,
+      "Rf": 2,
+      "QU1": 0.8,
+      "Vmax": 0.62,
+      "KNDef": 4,
+      "NFL": 5,
+      "NYIELD": 1
+    },
+    "RootGrouthParameters": {
+      "RRM": 0.01,
+      "RCVF": 0.721,
+      "Nroot": 0.007,
+      "CR": 1,
+      "GR": 1,
+      "RBini": 10
+    },
+    "LeafGrouthParameters": {
+      "LRM": 0.02,
+      "LCVF": 0.73,
+      "Nleaf_1": 0.03,
+      "Nleaf_2": 0.012,
+      "CL": 2,
+      "LBini": 20,
+      "X_L": 1.5,
+      "Y_L": 1
+    },
+    "YieldGrouthParameters": {
+      "ERM": 0.015,
+      "ECVF": 0.73,
+      "Near": 0.012,
+      "Lreut_Coef": 0.50,
+      "Sreut_Coef": 0.50
+    },
+    "SteamGrouthParameters": {
+      "SRM": 0.015,
+      "SCVF": 0.6,
+      "Nstem": 0.01,
+      "CS": 0.6,
+      "GS": 20,
+      "X_S": 1.5,
+      "Y_S": 1
+    }
+  }
+}
