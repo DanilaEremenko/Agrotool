@@ -1,3 +1,5 @@
+import numpy as np
+
 from agrotool_classes.TAgroEcoSystem import TWeatherRecord
 from agrotool_classes.TRunController import TRunController
 
@@ -5,6 +7,7 @@ from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
 from agrotool_lib.RadPhot import RadPhotosynthesis
+from agrotool_lib import Precipitation
 from agrotool_lib.RadiationAstronomy import GetCurrSumRad, _DayLength
 from agrotool_lib.WaterSoilDynamics import WaterSoilDynamics
 from agrotool_lib.Development import RecalculateBioTime
@@ -24,34 +27,6 @@ def pretty_print(text):
     print("%s%s%s" % (divisor, text, divisor))
 
 
-def RefreshVisualDate(cDate, bTime):
-    # ModelForm.edDate.Text := DateToStr(cDate);
-    # ModelForm.edDate.Refresh;
-    # ModelForm.bioGauge.Position := trunc(bTime*100);
-    # ModelForm.bioGauge.Refresh;
-    # ModelForm.refreshSoilProfile;
-    print("RefreshVisualDate empty")
-    pass
-
-
-def ContinousRunning(hRunningController: TRunController):
-    # Организация цикла по суточным шагам
-    weatherHistory = TWeatherHistory()
-    weatherIter = iter(hRunningController.weatherList)
-    weatherIter.__next__()
-    for cWR in hRunningController.weatherList:
-        try:  # nextWR necessary in OneDayStep
-            nextWR = weatherIter.__next__()
-        except StopIteration:  # for last day
-            nextWR = cWR.__copy__()
-            nextWR.date += timedelta(days=1)
-        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
-                                                  cWR, nextWR,
-                                                  stepTimeDelta=timedelta(hours=1)))
-
-    weatherHistory.show_all_days()
-
-
 def OneDayStep(hRunningController: TRunController,
                cWR: TWeatherRecord,
                nextWR: TWeatherRecord,
@@ -64,30 +39,36 @@ def OneDayStep(hRunningController: TRunController,
     sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
     timeForDailyOperation = timedelta(hours=12)
 
+    # hours calulation
+    noonTime = datetime(year=cWR.date.year,  # for calculation from sunrise to sunrise of next day
+                        month=cWR.date.month,
+                        day=cWR.date.day,
+                        hour=14)
     fi = hRunningController.measurementUnit.Latitude
-    currDayLength = _DayLength(fi, cWR.date)
-    nextDayLength = _DayLength(fi, nextWR.date)
-    hourCurrSunrise = int(14 - currDayLength / 2)
-    hourNextSunrise = int(14 - nextDayLength / 2)
+    currDayLength = timedelta(hours=_DayLength(fi, cWR.date))
+    nextDayLength = timedelta(hours=_DayLength(fi, nextWR.date))
+    currSunriseDate = noonTime - currDayLength / 2
+    nextSunriseDate = noonTime - nextDayLength / 2 + timedelta(days=1)
 
-    cDateTime = datetime(year=cWR.date.year,  # calculate from sunrise to sunrise of next day
-                         month=cWR.date.month,
-                         day=cWR.date.day,
-                         hour=hourCurrSunrise)
-    currFinish = datetime(year=nextWR.date.year,
-                          month=nextWR.date.month,
-                          day=nextWR.date.day,
-                          hour=hourNextSunrise)
+    cDateTime = datetime(year=currSunriseDate.year,  # for calculation from sunrise to sunrise of next day
+                         month=currSunriseDate.month,
+                         day=currSunriseDate.day,
+                         hour=currSunriseDate.hour)
+    currFinish = datetime(year=nextSunriseDate.year,
+                          month=nextSunriseDate.month,
+                          day=nextSunriseDate.day,
+                          hour=nextSunriseDate.hour)
 
-    temp_increase = (cWR.Tmax - cWR.Tmin) / (timedelta(
-        hours=currDayLength / 2) / stepTimeDelta)
-    temp_decrease = (cWR.Tmax - nextWR.Tmin) / (timedelta(
-        hours=24 - currDayLength / 2) / stepTimeDelta)
-    Tcurr = cWR.Tmin
+    # temperature calculation
+    T_history = np.array(
+        [*np.linspace(cWR.Tmin, cWR.Tmax, num=int((noonTime - currSunriseDate) / stepTimeDelta)),
+         *np.linspace(cWR.Tmax, nextWR.Tmin, num=int((nextSunriseDate - noonTime) / stepTimeDelta))]
+    )
+    prec_history = Precipitation.get_precipitation_history(cWR.Prec, T_history)
 
     # ------------------------------ day step -----------------------------------------------------------
     # Delta loop
-    while cDateTime < currFinish:
+    for T_curr, Prec_curr in zip(T_history, prec_history):
 
         # Daily operation check
         pretty_print('Step2')
@@ -109,6 +90,7 @@ def OneDayStep(hRunningController: TRunController,
             hRunningController.agroEcoSystem.Air_Part.alpha_snow = 0
         else:  # Иначе считаем таяние снега и прибавляем осадки
             delSnowPrec = popov_melting(hRunningController.agroEcoSystem)  # Проверить формулу Попова
+            print(cDateTime)
             cWR.Prec = cWR.Prec + delSnowPrec
             sumSnow = sumSnow - delSnowPrec
 
@@ -190,29 +172,47 @@ def OneDayStep(hRunningController: TRunController,
         # Его присвоение
         hRunningController.agroEcoSystem.Air_Part.currentEnv = cWR
         bTime = hRunningController.agroEcoSystem.Crop_Part.Individual_Plant.Ph_Time
-        RefreshVisualDate(cDateTime, bTime)
 
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        delta = cDateTime.hour + cDateTime.minute / 60
+        cur_day_time = cDateTime.hour + cDateTime.minute / 60
         if cDateTime.day != cWR.date.day:
-            delta += 24
+            cur_day_time += 24
 
         dayWeatherHistory.append(
             Rad=hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds,
-            T=Tcurr,
-            delta=delta)
+            T=T_curr,
+            prec=Prec_curr,
+            delta=cur_day_time)
 
-        if cDateTime.hour <= 14 and cDateTime.day == cWR.date.day:  # TODO works incorrect for step < hour
-            Tcurr += temp_increase
-        else:
-            Tcurr -= temp_decrease
     return dayWeatherHistory
 
 
-if __name__ == '__main__':
+def ContinousRunning(hRunningController: TRunController):
+    # Организация цикла по суточным шагам
+    weatherHistory = TWeatherHistory()
+    weatherIter = iter(hRunningController.weatherList)
+    weatherIter.__next__()
+    for cWR in hRunningController.weatherList:
+        try:  # nextWR necessary in OneDayStep
+            nextWR = weatherIter.__next__()
+        except StopIteration:  # for last day
+            nextWR = cWR.__copy__()
+            nextWR.date += timedelta(days=1)
+        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
+                                                  cWR, nextWR,
+                                                  stepTimeDelta=timedelta(hours=1)))
+
+    weatherHistory.show_all_days()
+
+
+def main():
     weatherList = TWeatherRecord.get_list_from_json("environments/test_1/weather.json")
     hRunningController = TRunController(weatherList=weatherList)
 
     ContinousRunning(hRunningController=hRunningController)
+
+
+if __name__ == '__main__':
+    main()
