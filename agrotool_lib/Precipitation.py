@@ -12,8 +12,8 @@ def get_precipitation_history(prec_sum, T_history):
     if prec_sum == 0:
         return np.zeros(len(T_history))
 
-    min_prec = prec_sum / 10
-    max_prec = prec_sum / 5
+    min_prec = prec_sum / (len(T_history) / 2)
+    max_prec = prec_sum / (len(T_history) / 4)
     prob = 0.0
 
     while True:
