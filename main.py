@@ -24,34 +24,6 @@ def pretty_print(text):
     print("%s%s%s" % (divisor, text, divisor))
 
 
-def RefreshVisualDate(cDate, bTime):
-    # ModelForm.edDate.Text := DateToStr(cDate);
-    # ModelForm.edDate.Refresh;
-    # ModelForm.bioGauge.Position := trunc(bTime*100);
-    # ModelForm.bioGauge.Refresh;
-    # ModelForm.refreshSoilProfile;
-    print("RefreshVisualDate empty")
-    pass
-
-
-def ContinousRunning(hRunningController: TRunController):
-    # Организация цикла по суточным шагам
-    weatherHistory = TWeatherHistory()
-    weatherIter = iter(hRunningController.weatherList)
-    weatherIter.__next__()
-    for cWR in hRunningController.weatherList:
-        try:  # nextWR necessary in OneDayStep
-            nextWR = weatherIter.__next__()
-        except StopIteration:  # for last day
-            nextWR = cWR.__copy__()
-            nextWR.date += timedelta(days=1)
-        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
-                                                  cWR, nextWR,
-                                                  stepTimeDelta=timedelta(hours=1)))
-
-    weatherHistory.show_all_days()
-
-
 def OneDayStep(hRunningController: TRunController,
                cWR: TWeatherRecord,
                nextWR: TWeatherRecord,
@@ -190,7 +162,6 @@ def OneDayStep(hRunningController: TRunController,
         # Его присвоение
         hRunningController.agroEcoSystem.Air_Part.currentEnv = cWR
         bTime = hRunningController.agroEcoSystem.Crop_Part.Individual_Plant.Ph_Time
-        RefreshVisualDate(cDateTime, bTime)
 
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
@@ -211,8 +182,30 @@ def OneDayStep(hRunningController: TRunController,
     return dayWeatherHistory
 
 
-if __name__ == '__main__':
+def ContinousRunning(hRunningController: TRunController):
+    # Организация цикла по суточным шагам
+    weatherHistory = TWeatherHistory()
+    weatherIter = iter(hRunningController.weatherList)
+    weatherIter.__next__()
+    for cWR in hRunningController.weatherList:
+        try:  # nextWR necessary in OneDayStep
+            nextWR = weatherIter.__next__()
+        except StopIteration:  # for last day
+            nextWR = cWR.__copy__()
+            nextWR.date += timedelta(days=1)
+        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
+                                                  cWR, nextWR,
+                                                  stepTimeDelta=timedelta(hours=1)))
+
+    weatherHistory.show_all_days()
+
+
+def main():
     weatherList = TWeatherRecord.get_list_from_json("environments/test_1/weather.json")
     hRunningController = TRunController(weatherList=weatherList)
 
     ContinousRunning(hRunningController=hRunningController)
+
+
+if __name__ == '__main__':
+    main()
