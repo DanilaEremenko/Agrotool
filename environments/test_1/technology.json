@@ -1,0 +1,161 @@
+{
+  "Technology": {
+    "Planting": {
+      "Date": "06/05/1900",
+      "Doze": 4.00,
+      "Descr": "Яровая пшеница",
+      "Depth": 5.00,
+      "Fertility": 90.00,
+      "isTriggered": 0
+    },
+    "PlantingAutomation": {
+      "EarlyDate": "10/02/1900",
+      "LastDate": "15/06/1900",
+      "TTh1": 0.50,
+      "TTh2": 4.50,
+      "TTh3": 14.00,
+      "TTh4": 20.00,
+      "PTh1": -160.00,
+      "PTh2": -330.00,
+      "PTh3": -1000.00,
+      "PTh4": -3000.00
+    },
+    "IrrigationRegime": {
+      "isTriggered": 0,
+      "Kind": 0,
+      "MinLimit": 0.80,
+      "MaxLimit": 1.00
+    },
+    "IrrigationActions": {
+      "Number": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "Date": [
+        "TODO"
+      ],
+      "Doze": [
+        "TODO"
+      ],
+      "Descr": [
+        "TODO"
+      ],
+      "Kind": [
+        "TODO"
+      ]
+    },
+    "FertilizationRegime": {
+      "isTriggered": 0,
+      "Kind": 0,
+      "MinLimit": 0.0020,
+      "MaxLimit": 0.90
+    },
+    "FertilizationActions": {
+      "Number": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "Date": [
+        "TODO"
+      ],
+      "Doze": [
+        "TODO"
+      ],
+      "Descr": [
+        "TODO"
+      ],
+      "Kind": [
+        "TODO"
+      ]
+    },
+    "Harvesting_Regime": {
+      "isTriggered": 1,
+      "Kind": 1,
+      "MaxVegLength": 500,
+      "CtPhNum": 4,
+      "YieldType": 1
+    },
+    "Harvesting_Actions": {
+      "Number": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "Date": [
+        "TODO"
+      ],
+      "Doze": [
+        "TODO"
+      ],
+      "Descr": [
+        "TODO"
+      ],
+      "Kind": [
+        "TODO"
+      ]
+    }
+  }
+}
