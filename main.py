@@ -1,12 +1,14 @@
 import numpy as np
 
+from core.DataProcessor import get_df_from_json
+from core import MatplotlibVisualizing
+from core import PlotlyVisualizing
+
 from agrotool_classes.TAgroEcoSystem import TWeatherRecord
 from agrotool_classes.TRunController import TRunController
-
 from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
-from agrotool_lib.RadPhot import RadPhotosynthesis
 from agrotool_lib import Precipitation
 from agrotool_lib.RadiationAstronomy import GetCurrSumRad, _DayLength
 from agrotool_lib.WaterSoilDynamics import WaterSoilDynamics
@@ -17,8 +19,6 @@ from agrotool_lib.OutputData import TextOutput
 from agrotool_lib.Snowmelt import popov_melting
 
 from datetime import datetime, timedelta
-import pandas as pd
-import json
 
 # const
 MAX_COUNT = 4  # // Максимальное количество "битых" погодных записей
@@ -32,7 +32,8 @@ def pretty_print(text):
 def OneDayStep(hRunningController: TRunController,
                cWR: TWeatherRecord,
                nextWR: TWeatherRecord,
-               stepTimeDelta: timedelta):
+               stepTimeDelta: timedelta,
+               weatherHistory: TWeatherHistory):
     print("____________\n____________\n DAY = %s\n____________\n____________\n" % cWR.date.__str__())
     dayWeatherHistory = DayWeather()
     pretty_print('Step1')
@@ -188,7 +189,13 @@ def OneDayStep(hRunningController: TRunController,
             prec=Prec_curr,
             delta=cur_day_time)
 
-    return dayWeatherHistory
+        weatherHistory.append_frame({"Date": [cDateTime],
+                                     "T": [T_curr],
+                                     "Rad": [
+                                         hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds],
+                                     "Prec": [Prec_curr]})
+
+    weatherHistory.append_day(cWR, dayWeatherHistory)
 
 
 def ContinousRunning(hRunningController: TRunController):
@@ -206,18 +213,14 @@ def ContinousRunning(hRunningController: TRunController):
             nextWR = cWR.__copy__()
             nextWR.date += timedelta(days=1)
 
-        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
-                                                  cWR, nextWR,
-                                                  stepTimeDelta=timedelta(hours=1)))
+        OneDayStep(hRunningController,
+                   cWR=cWR, nextWR=nextWR,
+                   stepTimeDelta=timedelta(hours=1),
+                   weatherHistory=weatherHistory)
 
-    weatherHistory.show_all_days()
+    MatplotlibVisualizing.show_all_days(weatherHistory)
 
-
-def get_df_from_json(json_file):
-    with open(json_file) as json_data:
-        json_data = json.load(json_data)
-    weatherDf = pd.DataFrame(json_data["Weather"])
-    return weatherDf
+    PlotlyVisualizing.show_from_df(df=weatherHistory.pd_frame)
 
 
 def main():
