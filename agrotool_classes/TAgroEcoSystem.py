@@ -1,40 +1,22 @@
 # TODO check classes
 from agrotool_lib.DebugInspector import whoami
 import copy
-import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class TWeatherRecord():
-    def __init__(self, date: datetime, prec, watering, tmin, tmax, kex, isSomething):
-        self.date = date
-        self.Prec = prec  # precipitation
-        self.Watering = watering
-        self.Tmin = tmin  # min temperature
-        self.Tmax = tmax  # max temperature
+    def __init__(self, data):
+        self.date = datetime.strptime(data["Date"], "%d/%m/%Y")
+        self.Prec = data["Prec"]  # precipitation
+        self.Watering = 0  # TODO ???
+        self.Tmin = data["Tmin"]  # min temperature
+        self.Tmax = data["Tmax"]  # max temperature
         self.Tave = int((self.Tmax + self.Tmin) / 2)  # average temperature
-        self.Kex = kex  # ослабление солнечной радиации (облачность фактическая радиация/если бы не было облаков)
-        # TODO RadiationAstronomy._DayLength
+        self.Kex = data[
+            "Kex"]  # ослабление солнечной радиации (облачность фактическая радиация/если бы не было облаков)
 
     def __copy__(self):
         return copy.deepcopy(self)
-
-    @staticmethod
-    def get_list_from_json(json_file):
-        with open(json_file) as json_data:
-            json_data = json.load(json_data)
-        json_data = json_data["Weather"]
-        weather_map = []
-        for key in json_data.keys():
-            casted_key = datetime.strptime(key, "%d/%m/%Y")
-            weather_map.append(TWeatherRecord(date=casted_key,
-                                              prec=json_data[key]["Prec"],
-                                              tmin=json_data[key]["Tmin"],
-                                              tmax=json_data[key]["Tmax"],
-                                              kex=json_data[key]["Kex"],
-                                              isSomething=False,
-                                              watering=0))
-        return weather_map
 
 
 # ------------------------------- Culture part --------------------------------------------

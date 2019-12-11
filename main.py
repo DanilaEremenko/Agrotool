@@ -1,12 +1,14 @@
 import numpy as np
 
+from core.DataProcessor import get_df_from_json
+from core import MatplotlibVisualizing
+from core import PlotlyVisualizing
+
 from agrotool_classes.TAgroEcoSystem import TWeatherRecord
 from agrotool_classes.TRunController import TRunController
-
 from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
-from agrotool_lib.RadPhot import RadPhotosynthesis
 from agrotool_lib import Precipitation
 from agrotool_lib.RadiationAstronomy import GetCurrSumRad, _DayLength
 from agrotool_lib.WaterSoilDynamics import WaterSoilDynamics
@@ -30,7 +32,8 @@ def pretty_print(text):
 def OneDayStep(hRunningController: TRunController,
                cWR: TWeatherRecord,
                nextWR: TWeatherRecord,
-               stepTimeDelta: timedelta):
+               stepTimeDelta: timedelta,
+               weatherHistory: TWeatherHistory):
     print("____________\n____________\n DAY = %s\n____________\n____________\n" % cWR.date.__str__())
     dayWeatherHistory = DayWeather()
     pretty_print('Step1')
@@ -186,31 +189,42 @@ def OneDayStep(hRunningController: TRunController,
             prec=Prec_curr,
             delta=cur_day_time)
 
-    return dayWeatherHistory
+        weatherHistory.append_frame({"Date": [cDateTime],
+                                     "T": [T_curr],
+                                     "Rad": [
+                                         hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds],
+                                     "Prec": [Prec_curr]})
+
+    weatherHistory.append_day(cWR, dayWeatherHistory)
 
 
 def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     weatherHistory = TWeatherHistory()
-    weatherIter = iter(hRunningController.weatherList)
+    weatherIter = iter(hRunningController.weatherDf.to_dict(orient='records'))
     weatherIter.__next__()
-    for cWR in hRunningController.weatherList:
+    for cWR in hRunningController.weatherDf.to_dict(orient='records'):
+
+        cWR = TWeatherRecord(cWR)
+
         try:  # nextWR necessary in OneDayStep
-            nextWR = weatherIter.__next__()
+            nextWR = TWeatherRecord(weatherIter.__next__())
         except StopIteration:  # for last day
             nextWR = cWR.__copy__()
             nextWR.date += timedelta(days=1)
-        weatherHistory.append_day(cWR, OneDayStep(hRunningController,
-                                                  cWR, nextWR,
-                                                  stepTimeDelta=timedelta(hours=1)))
 
-    weatherHistory.show_all_days()
+        OneDayStep(hRunningController,
+                   cWR=cWR, nextWR=nextWR,
+                   stepTimeDelta=timedelta(hours=1),
+                   weatherHistory=weatherHistory)
+
+    MatplotlibVisualizing.show_all_days(weatherHistory)
+
+    PlotlyVisualizing.show_from_df(df=weatherHistory.pd_frame)
 
 
 def main():
-    weatherList = TWeatherRecord.get_list_from_json("environments/test_1/weather.json")
-    hRunningController = TRunController(weatherList=weatherList)
-
+    hRunningController = TRunController(weatherDf=get_df_from_json("environments/test_1/weather.json"))
     ContinousRunning(hRunningController=hRunningController)
 
 
