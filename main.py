@@ -17,6 +17,8 @@ from agrotool_lib.OutputData import TextOutput
 from agrotool_lib.Snowmelt import popov_melting
 
 from datetime import datetime, timedelta
+import pandas as pd
+import json
 
 # const
 MAX_COUNT = 4  # // Максимальное количество "битых" погодных записей
@@ -192,14 +194,18 @@ def OneDayStep(hRunningController: TRunController,
 def ContinousRunning(hRunningController: TRunController):
     # Организация цикла по суточным шагам
     weatherHistory = TWeatherHistory()
-    weatherIter = iter(hRunningController.weatherList)
+    weatherIter = iter(hRunningController.weatherDf.to_dict(orient='records'))
     weatherIter.__next__()
-    for cWR in hRunningController.weatherList:
+    for cWR in hRunningController.weatherDf.to_dict(orient='records'):
+
+        cWR = TWeatherRecord(cWR)
+
         try:  # nextWR necessary in OneDayStep
-            nextWR = weatherIter.__next__()
+            nextWR = TWeatherRecord(weatherIter.__next__())
         except StopIteration:  # for last day
             nextWR = cWR.__copy__()
             nextWR.date += timedelta(days=1)
+
         weatherHistory.append_day(cWR, OneDayStep(hRunningController,
                                                   cWR, nextWR,
                                                   stepTimeDelta=timedelta(hours=1)))
@@ -207,10 +213,15 @@ def ContinousRunning(hRunningController: TRunController):
     weatherHistory.show_all_days()
 
 
-def main():
-    weatherList = TWeatherRecord.get_list_from_json("environments/test_1/weather.json")
-    hRunningController = TRunController(weatherList=weatherList)
+def get_df_from_json(json_file):
+    with open(json_file) as json_data:
+        json_data = json.load(json_data)
+    weatherDf = pd.DataFrame(json_data["Weather"])
+    return weatherDf
 
+
+def main():
+    hRunningController = TRunController(weatherDf=get_df_from_json("environments/test_1/weather.json"))
     ContinousRunning(hRunningController=hRunningController)
 
 
