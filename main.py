@@ -216,7 +216,7 @@ def ContinousRunning(hRunningController: TRunController):
 
         OneDayStep(hRunningController,
                    cWR=cWR, nextWR=nextWR,
-                   stepTimeDelta=timedelta(hours=1),
+                   stepTimeDelta=timedelta(hours=1 / 2),
                    weatherHistory=weatherHistory)
 
     MatplotlibVisualizing.show_all_days(weatherHistory)
