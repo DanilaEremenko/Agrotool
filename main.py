@@ -64,8 +64,8 @@ def OneDayStep(hRunningController: TRunController,
 
     # temperature calculation
     T_history = np.array(
-        [*np.linspace(cWR.Tmin, cWR.Tmax, num=int((noonTime - currSunriseDate) / stepTimeDelta)),
-         *np.linspace(cWR.Tmax, nextWR.Tmin, num=int((nextSunriseDate - noonTime) / stepTimeDelta))]
+        [*np.linspace(cWR.Tmin, cWR.Tmax, num=int((noonTime - currSunriseDate) / stepTimeDelta))[0:-1],
+         *np.linspace(cWR.Tmax, nextWR.Tmin, num=int((nextSunriseDate - noonTime) / stepTimeDelta) + 2)]
     )
     prec_history = Precipitation.get_precipitation_history(cWR.Prec, T_history)
 
@@ -168,8 +168,6 @@ def OneDayStep(hRunningController: TRunController,
         TextOutput(hRunningController.agroEcoSystem, False)
 
         pretty_print('Step17')
-        # Временной шаг
-        cDateTime += stepTimeDelta
 
         pretty_print('Step18')
         # Его присвоение
@@ -194,6 +192,9 @@ def OneDayStep(hRunningController: TRunController,
                                      "Rad": [
                                          hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds],
                                      "Prec": [Prec_curr]})
+
+        # Временной шаг
+        cDateTime += stepTimeDelta
 
     weatherHistory.append_day(cWR, dayWeatherHistory)
 
