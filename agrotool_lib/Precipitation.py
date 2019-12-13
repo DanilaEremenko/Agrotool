@@ -25,8 +25,12 @@ def get_precipitation_history(prec_sum, T_history):
 
             if T_history[i] < T_history[i - 1]:
                 max_rand = int(1 / prob)
-                prec_history[i] = np.random.uniform(min_prec, max_prec) * \
-                                  int(np.random.randint(0, max_rand + 1) / max_rand)
+
+                if max_rand == 0:
+                    prec_history[i] = 0
+                else:
+                    prec_history[i] = np.random.uniform(min_prec, max_prec) * \
+                                      int(np.random.randint(0, max_rand + 1) / max_rand)
 
                 if prec_history[i] != 0:
                     not_zero_indexes.append(i)
