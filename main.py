@@ -53,25 +53,18 @@ def OneDayStep(hRunningController: TRunController,
     currSunriseDate = noonTime - currDayLength / 2
     nextSunriseDate = noonTime - nextDayLength / 2 + timedelta(days=1)
 
-    cDateTime = datetime(year=currSunriseDate.year,  # for calculation from sunrise to sunrise of next day
-                         month=currSunriseDate.month,
-                         day=currSunriseDate.day,
-                         hour=currSunriseDate.hour)
-    currFinish = datetime(year=nextSunriseDate.year,
-                          month=nextSunriseDate.month,
-                          day=nextSunriseDate.day,
-                          hour=nextSunriseDate.hour)
-
     # temperature calculation
     T_history = np.array(
         [*np.linspace(cWR.Tmin, cWR.Tmax, num=int((noonTime - currSunriseDate) / stepTimeDelta))[0:-1],
          *np.linspace(cWR.Tmax, nextWR.Tmin, num=int((nextSunriseDate - noonTime) / stepTimeDelta) + 2)]
     )
+    timeHistory = [currSunriseDate + stepTimeDelta * i for i in range(0, len(T_history))]
+
     prec_history = Precipitation.get_precipitation_history(cWR.Prec, T_history)
 
     # ------------------------------ day step -----------------------------------------------------------
     # Delta loop
-    for T_curr, Prec_curr in zip(T_history, prec_history):
+    for cDateTime, T_curr, Prec_curr in zip(timeHistory, T_history, prec_history):
 
         # Daily operation check
         pretty_print('Step2')
