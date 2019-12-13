@@ -80,11 +80,11 @@ def GetCurrRad(fi, cDate: datetime):
     b1 = sin(FiRad) * sin(sd)
     b2 = cos(FiRad) * cos(sd)
 
-    shour1 = sinhour(cDate.hour, b1, b2)
+    shour1 = sinhour(cDate.hour + cDate.minute / 60 + cDate.second / 3600, b1, b2)
     return AQR(shour1) if shour1 > 0 else 0
 
 
-def GetCurrSumRad(fi, cDate, delta: timedelta):
+def GetCurrSumRad(fi, cDate: datetime, delta: timedelta):
     if delta < timedelta(hours=1):
         return GetCurrRad(fi, cDate) * delta.seconds
     else:
