@@ -14,29 +14,33 @@ def get_precipitation_history(prec_sum, T_history):
 
     min_prec = prec_sum / (len(T_history) / 2)
     max_prec = prec_sum / (len(T_history) / 4)
-    prob = 0.0
+    common_prob = 0.0
 
     while True:
         prec_history = np.zeros(len(T_history))
-        prob += 0.1
+        common_prob += 0.1
         not_zero_indexes = []
 
-        for i in range(1, len(T_history)):
+        for i, curr_t in enumerate(T_history):
 
-            if T_history[i] < T_history[i - 1]:
-                max_rand = int(1 / prob)
+            if T_history[i] < T_history[i - 1]:  # probability bigger if t falls
+                prob = common_prob + 0.2
+            else:
+                prob = common_prob
 
-                if max_rand == 0:
-                    prec_history[i] = 0
-                else:
-                    prec_history[i] = np.random.uniform(min_prec, max_prec) * \
-                                      int(np.random.randint(0, max_rand + 1) / max_rand)
+            max_rand = int(1 / prob)
 
-                if prec_history[i] != 0:
-                    not_zero_indexes.append(i)
+            if max_rand == 0:
+                prec_history[i] = 0
+            else:
+                prec_history[i] = np.random.uniform(min_prec, max_prec) * \
+                                  int(np.random.randint(0, max_rand + 1) / max_rand) #
 
-                if sum(prec_history) > prec_sum:
-                    diff = sum(prec_history) - prec_sum
-                    for i in not_zero_indexes:
-                        prec_history[i] -= diff / len(not_zero_indexes)
-                    return prec_history
+            if prec_history[i] != 0:
+                not_zero_indexes.append(i)
+
+            if sum(prec_history) > prec_sum:
+                diff = sum(prec_history) - prec_sum
+                for i in not_zero_indexes:
+                    prec_history[i] -= diff / len(not_zero_indexes)
+                return prec_history
