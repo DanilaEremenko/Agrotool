@@ -6,7 +6,7 @@ from core import PlotlyVisualizing
 
 from agrotool_classes.TAgroEcoSystem import TWeatherRecord
 from agrotool_classes.TRunController import TRunController
-from agrotool_classes.TWeatherHistory import TWeatherHistory, DayWeather
+from agrotool_classes.TWeatherHistory import TWeatherHistory
 
 from agrotool_lib.Evap_base import Evapotranspiration, SoilTemperature
 from agrotool_lib import Precipitation
@@ -35,7 +35,6 @@ def OneDayStep(hRunningController: TRunController,
                stepTimeDelta: timedelta,
                weatherHistory: TWeatherHistory):
     print("____________\n____________\n DAY = %s\n____________\n____________\n" % cWR.date.__str__())
-    dayWeatherHistory = DayWeather()
     pretty_print('Step1')
     # Один шаг модели за текущее число
     Tave = cWR.Tave
@@ -170,16 +169,6 @@ def OneDayStep(hRunningController: TRunController,
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        cur_day_time = cDateTime.hour + cDateTime.minute / 60
-        if cDateTime.day != cWR.date.day:
-            cur_day_time += 24
-
-        dayWeatherHistory.append(
-            Rad=hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds,
-            T=T_curr,
-            prec=Prec_curr,
-            delta=cur_day_time)
-
         weatherHistory.append_frame({"Date": [cDateTime],
                                      "T": [T_curr],
                                      "Rad": [
@@ -188,8 +177,6 @@ def OneDayStep(hRunningController: TRunController,
 
         # Временной шаг
         cDateTime += stepTimeDelta
-
-    weatherHistory.append_day(cWR, dayWeatherHistory)
 
 
 def ContinousRunning(hRunningController: TRunController):
@@ -212,9 +199,9 @@ def ContinousRunning(hRunningController: TRunController):
                    stepTimeDelta=timedelta(hours=1 / 2),
                    weatherHistory=weatherHistory)
 
-    MatplotlibVisualizing.show_all_days(weatherHistory)
+    MatplotlibVisualizing.show_all_days(df=weatherHistory.df)
 
-    PlotlyVisualizing.show_from_df(df=weatherHistory.pd_frame)
+    PlotlyVisualizing.show_from_df(df=weatherHistory.df)
 
 
 def main():
