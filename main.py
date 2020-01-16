@@ -38,7 +38,7 @@ def OneDayStep(hRunningController: TRunController,
     pretty_print('Step1')
     # Один шаг модели за текущее число
     Tave = cWR.Tave
-    sumSnow = hRunningController.agroEcoSystem.Air_Part.sumSnow
+    sumSnow = hRunningController.agroEcoSystem.Air_Part.SumSnow
     timeForDailyOperation = timedelta(hours=12)
 
     # hours calulation
@@ -80,13 +80,14 @@ def OneDayStep(hRunningController: TRunController,
         # Семантические операции
 
         # Расчет баланса снега
-        if (Tave < 0):  # Если средняя температура < 0 - количество снега увеличивается
-            sumSnow = sumSnow + cWR.Prec
+        if (T_curr < 0):  # Если текущая температура < 0 - количество снега увеличивается
+            sumSnow = sumSnow + Prec_curr
             hRunningController.agroEcoSystem.Air_Part.alpha_snow = 0
         else:  # Иначе считаем таяние снега и прибавляем осадки
-            delSnowPrec = popov_melting(hRunningController.agroEcoSystem)  # Проверить формулу Попова
+            delSnowPrec = popov_melting(hRunningController.agroEcoSystem, cDateTime, stepTimeDelta,
+                                        T_curr)  # Проверить формулу Попова
             print(cDateTime)
-            cWR.Prec = cWR.Prec + delSnowPrec
+            Prec_curr += delSnowPrec
             sumSnow = sumSnow - delSnowPrec
 
         pretty_print('Step6')
@@ -171,6 +172,7 @@ def OneDayStep(hRunningController: TRunController,
 
         weatherHistory.append_frame({"Date": [cDateTime],
                                      "T": [T_curr],
+                                     "SumSnow": [sumSnow],
                                      "Rad": [
                                          hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds],
                                      "Prec": [Prec_curr]})

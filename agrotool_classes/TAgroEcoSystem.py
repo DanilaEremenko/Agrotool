@@ -8,6 +8,7 @@ class TWeatherRecord():
     def __init__(self, data):
         self.date = datetime.strptime(data["Date"], "%d/%m/%Y")
         self.Prec = data["Prec"]  # precipitation
+        self.wind = data["Wind"]
         self.Watering = 0  # TODO ???
         self.Tmin = data["Tmin"]  # min temperature
         self.Tmax = data["Tmax"]  # max temperature
@@ -68,8 +69,8 @@ class TIndividualtPlant():
 # ------------------------------- Environment parts --------------------------------------------
 class TAirPart():
     def __init__(self):
-        self.sumSnow = 0  # TODO
-        self.alpha_snow = 0
+        self.SumSnow = 0  # TODO
+        self.alpha_snow = 0  # ready for melting
         self.sumTrans = 0
         self.sumPrec = 0
         self.SumRad = 0
