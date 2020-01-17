@@ -201,7 +201,9 @@ def ContinousRunning(hRunningController: TRunController):
                    stepTimeDelta=timedelta(hours=1 / 2),
                    weatherHistory=weatherHistory)
 
-    MatplotlibVisualizing.show_all_days(df=weatherHistory.df)
+    weatherHistory.df = weatherHistory.df.set_index("Date")
+
+    MatplotlibVisualizing.show_from_df(df=weatherHistory.df)
 
     PlotlyVisualizing.show_from_df(df=weatherHistory.df)
 
