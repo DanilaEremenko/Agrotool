@@ -170,12 +170,16 @@ def OneDayStep(hRunningController: TRunController,
         pretty_print('Step19')
         TextOutput(hRunningController.agroEcoSystem, False)
 
-        weatherHistory.append_frame({"Date": [cDateTime],
-                                     "T": [T_curr],
-                                     "SumSnow": [sumSnow],
-                                     "Rad": [
-                                         hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds],
-                                     "Prec": [Prec_curr]})
+        weatherHistory.append_frame(
+            {
+                "Date": [cDateTime],
+                "T": [T_curr],
+                "Rad": [
+                    hRunningController.agroEcoSystem.Air_Part.SumRad * 10_000 / stepTimeDelta.seconds],
+                "Prec": [Prec_curr],
+                "SumSnow": [sumSnow]
+            }
+        )
 
         # Временной шаг
         cDateTime += stepTimeDelta
