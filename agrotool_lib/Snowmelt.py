@@ -1,6 +1,8 @@
 from agrotool_classes.TAgroEcoSystem import TAgroEcoSystem
-import numpy as np
 from agrotool_lib.PhysicalConstants import asn, bsn
+
+from datetime import timedelta
+import numpy as np
 
 
 # TODO Using daily step?
@@ -12,7 +14,8 @@ def popov_melting(cSystem: TAgroEcoSystem, cDateTime, stepTimeDelta, TCurr):
     if cSystem.Air_Part.alpha_snow == 0:
         cSystem.Air_Part.alpha_snow = 0.4
     elif cSystem.Air_Part.alpha_snow < 1:
-        cSystem.Air_Part.alpha_snow = cSystem.Air_Part.alpha_snow + 0.2 * stepTimeDelta.seconds / (3600 * 24)
+        cSystem.Air_Part.alpha_snow = cSystem.Air_Part.alpha_snow + 0.2 * stepTimeDelta.seconds / \
+                                      (3600 * (timedelta(hours=24) / stepTimeDelta))
 
     CN = 1 + 0.24 * cloud
 
@@ -22,7 +25,7 @@ def popov_melting(cSystem: TAgroEcoSystem, cDateTime, stepTimeDelta, TCurr):
     else:
         sum_melt = 0.83 * (1 + 0.54 * wind) * (TCurr - 0.65) + 0.675 * (CN * (TCurr + 45) - 60)
 
-    sum_melt *= stepTimeDelta.seconds / (3600 * 24)
+    sum_melt *= stepTimeDelta.seconds / (3600 * (timedelta(hours=24) / stepTimeDelta))
 
     SumSnow = cSystem.Air_Part.SumSnow
     sum = max(sum_melt, 0)
