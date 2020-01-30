@@ -17,48 +17,59 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, x, dx, N, bc_val, bc_type=['flux', 
     :return:
     """
 
-    def _central_diff():  # TODO check
+    # TODO Отработать С_arr !!!!
 
-        A = np.zeros((len_x - 2, len_x - 2))
-        C = np.zeros((len_x - 2))
+    def _central_diff():
 
-        for i in range(len_x - 2):  # TODO why -2
+        A = np.zeros((len_x, len_x))
+        C = np.zeros(len_x)
+
+        for i in range(len_x):
             if dim == 1:
-                # D_forward = D(q[i] + dx / 2.)
-                D_forward = (D_arr[i] + D_arr[i + 1]) / 2
-                # D_backward = D(q[i] - dx / 2.)
+                D_forward = (D_arr[i] + D_arr[i + 1]) / 2 if i != len_x-1 else D_arr[i]
                 D_backward = (D_arr[i] + D_arr[i - 1]) / 2 if i != 0 else D_arr[i]
 
-            A_q = np.zeros((len_x - 2))
-            A_q[i] = 1. + 0.5 * s * D_forward + 0.5 * s * D_backward
-
+            A_q = np.zeros(len_x)
             if i == 0:
-                A_q[i + 1] = -0.5 * s * D_forward
-            elif i == len_x - 3:
-                A_q[i - 1] = -0.5 * s * D_backward
+                if bc_type[0] == 'val':
+                    A_q[i] = 1.0
+                else:
+                    A_q[i] = 1. + 0.5 * s * D_forward
+                    A_q[i + 1] = -0.5 * s * D_forward
+            elif i == len_x - 1:
+                if bc_type[1] == 'val':
+                    A_q[i] = 1.0
+                else:
+                    A_q[i] = 1. + 0.5 * s * D_backward
+                    A_q[i - 1] = -0.5 * s * D_backward
             else:
+                A_q[i] = 1. + 0.5 * s * D_forward + 0.5 * s * D_backward
                 A_q[i + 1] = -0.5 * s * D_forward
                 A_q[i - 1] = -0.5 * s * D_backward
             A[i, :] = A_q
 
-        B = 2. * np.identity(len_x - 2) - A
+        B = 2. * np.identity(len_x) - A
+        if bc_type[0] == 'val':
+            B[0, :] = np.zeros(len_x)
+        if bc_type[1] == 'val':
+            B[-1, :] = np.zeros(len_x)
 
         if dim == 1:
             if bc_type[0] == 'val':
-                C[0] = s * D_arr[0] * bc_val[0]
+                C[0] = bc_val[0]
             else:
-                raise Exception('flux mode is not implemented')
+                C[0] = - bc_val[0]*s*dx  # TODO: Проверить !!!!!
 
             if bc_type[1] == 'val':
-                C[-1] = s * D_arr[-1] * bc_val[1]
+                C[-1] = bc_val[1]
             else:
-                raise Exception('flux mode is not implemented')
+                C[-1] = - bc_val[1]*s*dx  # TODO: Проверить !!!!!
 
         return A, B, C
 
     def _diagonal_form(A):
 
-        ab = np.zeros((3, len_x - 2))
+        ab = np.zeros((3, len_x))
 
         ab[0, 1:] = np.diagonal(A, 1)
         ab[1, :] = np.diagonal(A, 0)
@@ -70,17 +81,21 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, x, dx, N, bc_val, bc_type=['flux', 
         if dim == 1:
             A, B, C = _central_diff()
 
-            T[1:-1, j + 1] = solve_banded((1, 1), _diagonal_form(A), np.dot(B, T[1:-1, j]) + C)
+            T[:, j + 1] = solve_banded((1, 1), _diagonal_form(A), np.dot(B, T[:, j]) + C)
 
     def _main_step():
-        T[0, :] = bc_val[0]
-        T[-1, :] = bc_val[1]
         for k in range(0, N - 1):
             _CN_step(k)
 
     #############################################################
     # -------------------- MAIN ---------------------------------
     #############################################################
+    if (bc_type[0] != 'val') and (bc_type[0] != 'flux'):
+        raise Exception('Boundary condition mode is not implemented')
+    if (bc_type[1] != 'val') and (bc_type[1] != 'flux'):
+        raise Exception('Boundary condition mode is not implemented')
+
+
     dim = len(T_0.shape)
     len_x = T_0.shape[0]
 
@@ -108,12 +123,12 @@ def solver_example():
     def D_func(x):
         return 100 + x
 
-    T, t = CN_diffusion_equation(T_0=np.array([20, 20, 20, 20, 20, 20, 20, 20, 20, 20]),
-                                 D_arr=np.array([105, 115, 125, 135, 145, 155, 165, 175, 185, 195]),
+    T, t = CN_diffusion_equation(T_0=np.array([40, 20, 20, 20, 20, 20, 20, 20, 20, 20]),
+                                 D_arr=np.array([100, 100, 100, 100, 100, 100, 100, 100, 100, 100]),
                                  C_arr=np.zeros(10),
                                  x=np.array([5, 15, 25, 35, 45, 55, 65, 75, 85, 95]),
                                  dx=10,
-                                 N=10,
+                                 N=20,
                                  s=0.005,
                                  bc_val=[40.0, 20.0],
                                  bc_type=['val', 'val']
