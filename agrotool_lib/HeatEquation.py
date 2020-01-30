@@ -18,21 +18,20 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, x, dx, N, bc_val, bc_type=['flux', 
     """
 
     def _central_diff():  # TODO check
-        if dim == 1:
-            len_q = x.shape[0]
 
-        A = np.zeros((len_q - 2, len_q - 2))
-        C = np.zeros((len_q - 2))
+        A = np.zeros((len_x - 2, len_x - 2))
+        C = np.zeros((len_x - 2))
 
-        for i in range(len_q - 2):  # TODO why -2
+        for i in range(len_x - 2):  # TODO why -2
             if dim == 1:
                 # D_forward = D(q[i] + dx / 2.)
                 D_forward = (D_arr[i] + D_arr[i + 1]) / 2
                 # D_backward = D(q[i] - dx / 2.)
                 D_backward = (D_arr[i] + D_arr[i - 1]) / 2 if i != 0 else D_arr[i]
 
-            A_q = np.zeros((len_q - 2))
+            A_q = np.zeros((len_x - 2))
             A_q[i] = 1. + 0.5 * s * D_forward + 0.5 * s * D_backward
+
             if i == 0:
                 A_q[i + 1] = -0.5 * s * D_forward
             elif i == len_x - 3:
@@ -42,7 +41,7 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, x, dx, N, bc_val, bc_type=['flux', 
                 A_q[i - 1] = -0.5 * s * D_backward
             A[i, :] = A_q
 
-        B = 2. * np.identity(len_q - 2) - A
+        B = 2. * np.identity(len_x - 2) - A
 
         if dim == 1:
             if bc_type[0] == 'val':
@@ -57,11 +56,9 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, x, dx, N, bc_val, bc_type=['flux', 
 
         return A, B, C
 
-    def _diagonal_form(A, q):
-        if dim == 1:
-            len_q = q.shape[0]
+    def _diagonal_form(A):
 
-        ab = np.zeros((3, len_q - 2))
+        ab = np.zeros((3, len_x - 2))
 
         ab[0, 1:] = np.diagonal(A, 1)
         ab[1, :] = np.diagonal(A, 0)
@@ -73,7 +70,7 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, x, dx, N, bc_val, bc_type=['flux', 
         if dim == 1:
             A, B, C = _central_diff()
 
-            T[1:-1, j + 1] = solve_banded((1, 1), _diagonal_form(A, x), np.dot(B, T[1:-1, j]) + C)
+            T[1:-1, j + 1] = solve_banded((1, 1), _diagonal_form(A), np.dot(B, T[1:-1, j]) + C)
 
     def _main_step():
         T[0, :] = bc_val[0]
