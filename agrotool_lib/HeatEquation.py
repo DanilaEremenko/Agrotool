@@ -23,7 +23,7 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, dx, N, bc_val, bc_type=['flux', 'fl
         C = np.zeros(len_x)
 
         for i in range(len_x):
-            D_forward = (D_arr[i] + D_arr[i + 1]) / (2 * C_arr[i]) if i != len_x-1 else D_arr[i] / C_arr[i];
+            D_forward = (D_arr[i] + D_arr[i + 1]) / (2 * C_arr[i]) if i != len_x - 1 else D_arr[i] / C_arr[i];
             D_backward = (D_arr[i] + D_arr[i - 1]) / (2 * C_arr[i]) if i != 0 else D_arr[i] / C_arr[i];
 
             A_q = np.zeros(len_x)
@@ -54,11 +54,11 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, dx, N, bc_val, bc_type=['flux', 'fl
         if bc_type[0] == 'val':
             C[0] = bc_val[0]
         else:
-            C[0] = - bc_val[0]*s*dx / C_arr[0]  # TODO: Проверить !!!!!
+            C[0] = - bc_val[0] * s * dx / C_arr[0]  # TODO: Проверить !!!!!
         if bc_type[1] == 'val':
             C[-1] = bc_val[1]
         else:
-            C[-1] = bc_val[1]*s*dx / C_arr[-1]  # TODO: Проверить !!!!!
+            C[-1] = bc_val[1] * s * dx / C_arr[-1]  # TODO: Проверить !!!!!
 
         return A, B, C
 
@@ -124,6 +124,26 @@ def solver_example():
                                  )
     plt.plot(T)
     plt.show()
+
+    import plotly.express as px
+    from pandas import DataFrame
+
+    t_full = []
+    layers = []
+    for layer_n, T_layer_history in enumerate(T):
+        t_full = [*t_full, *t]
+        layers = [*layers, *np.ones(len(T_layer_history), dtype=int) * (layer_n + 1)]
+
+    temp_df = DataFrame(
+        {
+            't': t_full,
+            'layer': layers,
+            'layer_sym': list(map(lambda layer: "layer_%d" % layer, layers)),
+            'T': T.flatten()
+        }
+    )
+    fig2 = px.scatter(temp_df, x="layer_sym", y="T", animation_frame="t", animation_group='layer_sym')
+    fig2.show()
 
 
 if __name__ == '__main__':
