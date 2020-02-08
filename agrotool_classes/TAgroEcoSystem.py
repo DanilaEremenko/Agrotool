@@ -76,7 +76,7 @@ class TAirPart():
         self.SumRad = 0
 
 
-class TCrop_Part():
+class TCropPart():
     def __init__(self):
         self.Esoil = 0
         self.Eplant = 0
@@ -90,20 +90,33 @@ class TSoilSurface():
         pass
 
 
+class TSoiltLayer():
+    def __init__(self, T, W, dh, h):
+        self.T = T
+        self.W = W
+        self.dh = dh
+        self.h = h
+
+
 # 10 parts
-class TSoil_Part():
-    def __init__(self):
+class TSoilPart():
+    def __init__(self, layers_num, depth):
         self.SoilSurface = TSoilSurface()
-        pass
+        self.SoilLayers = []
+        dh = depth / layers_num
+        h = 0
+        for i in range(layers_num):
+            self.SoilLayers.append(TSoiltLayer(T=0, W=0, dh=dh, h=h))
+            h += dh
 
 
 # ------------------------------- AgroEcoSystem --------------------------------------------
 class TAgroEcoSystem():
-    def __init__(self, Air_Part: TAirPart):
-        self.Air_Part = Air_Part
-        self.Crop_Part = TCrop_Part()
-        self.Soil_Part = TSoil_Part()
-        self.RunController = None
+    def __init__(self, airPart: TAirPart, layers_num, depth):
+        self.airPart = airPart
+        self.cropPart = TCropPart()
+        self.soilPart = TSoilPart(layers_num, depth)
+        self.runController = None
 
     def refreshing(self):
         print("%s.%s is a stub" % (type(self).__name__, whoami()))
