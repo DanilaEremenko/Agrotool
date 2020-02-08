@@ -1,0 +1,11 @@
+{
+  "MODEL_PARAMS": {
+    "TIME_STEP": {
+      "HOURS": 0.5,
+      "MINUTES": 0,
+      "SECONDS": 0
+    },
+    "N_SOIL_LAYERS": 20,
+    "SOIL_DEPTH": 2
+  }
+}
