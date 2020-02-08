@@ -2,18 +2,17 @@ import numpy as np
 from scipy.linalg import solve_banded
 
 
-def CN_diffusion_equation(T_0, D_arr, C_arr, dx, N, bc_val, bc_type=['flux', 'flux'], s=0.25):
+def CN_diffusion_equation(T_0, D_arr, C_arr, dx, dt, N, bc_val, bc_type=['flux', 'flux']):
     """
-    TODO update doc
-    :param T_0:
-    :param D_arr:
-    :param C_arr:
-    :param x: list
-    :param dx:
-    :param N:
-    :param bc_val:
-    :param bc_type: array with len 2, elements can be 'flux' or 'val'
-    :param s:
+    TODO define metrics
+    :param T_0:     распределение интересующей величины в начальный момент времени
+    :param D_arr:   текущее значение коэффициента проводимости интересующей величины
+    :param C_arr:   коэффициенты теплоемкости(для задачи теплопереноса)
+    :param dx:      шаг по координате(толщина слоя)
+    :param dt:      шаг по времени
+    :param N:       число шагов по времени
+    :param bc_val:  граничные условия
+    :param bc_type: тип граничный условий(flux - поток, val - значение)
     :return:
     """
 
@@ -23,8 +22,8 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, dx, N, bc_val, bc_type=['flux', 'fl
         C = np.zeros(len_x)
 
         for i in range(len_x):
-            D_forward = (D_arr[i] + D_arr[i + 1]) / (2 * C_arr[i]) if i != len_x - 1 else D_arr[i] / C_arr[i];
-            D_backward = (D_arr[i] + D_arr[i - 1]) / (2 * C_arr[i]) if i != 0 else D_arr[i] / C_arr[i];
+            D_forward = (D_arr[i] + D_arr[i + 1]) / (2 * C_arr[i]) if i != len_x - 1 else D_arr[i] / C_arr[i]
+            D_backward = (D_arr[i] + D_arr[i - 1]) / (2 * C_arr[i]) if i != 0 else D_arr[i] / C_arr[i]
 
             A_q = np.zeros(len_x)
             if i == 0:
@@ -91,7 +90,7 @@ def CN_diffusion_equation(T_0, D_arr, C_arr, dx, N, bc_val, bc_type=['flux', 'fl
         print('1D only, adjust initial wave array')
         return 0
 
-    dt = s * dx ** 2
+    s = dt / (dx ** 2)
 
     t = np.linspace(0., (N - 1) * dt, N)
 
@@ -116,7 +115,7 @@ def solver_example():
                                  C_arr,
                                  dx=10,
                                  N=20,
-                                 s=0.005,
+                                 dt=100,
                                  # bc_val=[40.0, 20.0],
                                  # bc_type=['val', 'val']
                                  bc_val=[40.0, 0.0],
