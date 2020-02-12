@@ -270,8 +270,14 @@ def ContinousRunning(hRunningController: TRunController):
 
     print("plotting temperature history in soil (it will be longer than previous plotting)")
 
+    # show soil_layers.T for 10 days on dynamic graphic
+    show_day_num = int(len(historyDict['soil']) * 10 / len(hRunningController.weatherDf))
     historyDict['soil']['t'] = pd.to_numeric(historyDict['soil']['t'])
-    PlotlyVisualizing.show_soil_from_df(df=historyDict['soil'].sort_values(by=['layer', 't']))
+    PlotlyVisualizing.show_soil_from_df(
+        df=historyDict['soil']
+            .head(show_day_num)
+            .sort_values(by=['layer', 't'])
+    )
 
 
 def main():
