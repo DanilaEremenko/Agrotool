@@ -263,9 +263,12 @@ def ContinousRunning(hRunningController: TRunController):
 
     historyDict['weather'].set_index("Date", inplace=True)
 
-    MatplotlibVisualizing.show_from_df(df=historyDict['weather'])
+    print("plotting simple histories")
 
+    MatplotlibVisualizing.show_from_df(df=historyDict['weather'])
     PlotlyVisualizing.show_from_df(df=historyDict['weather'])
+
+    print("plotting temperature history in soil (it will be longer than previous plotting)")
 
     historyDict['soil']['t'] = pd.to_numeric(historyDict['soil']['t'])
     PlotlyVisualizing.show_soil_from_df(df=historyDict['soil'].sort_values(by=['layer', 't']))
