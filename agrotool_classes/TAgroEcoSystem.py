@@ -2,6 +2,8 @@
 from agrotool_lib.DebugInspector import whoami
 import copy
 from datetime import datetime
+import numpy as np
+import math
 
 
 class TWeatherRecord():
@@ -91,26 +93,54 @@ class TSoilSurface():
 
 
 class TSoiltLayer():
+    """
+    TODO add description of class fields
+    """
+
     def __init__(self, T, W, dh, h):
         self.T = T
         self.W = W
         self.dh = dh
         self.h = h
+        # TODO these params should me calculated
+        self.K0 = 1.8E-7
+        self.W0 = 0.31
+        self.A = 2.7E-7
+        self.B = 0.16
+        self.C1 = 1.22E6
+        self.C2 = 4.17E6
+        self.Wfc = 0.45
+
+        self.C = 0
+        self.D = 0
+
+    def calculate_temperature(self):
+        self.C = self.C1 + self.C2 * self.W
+
+        # K0 + A * exp(-0.5 * sqr(ln(W / W0) / B))
+        self.D = self.K0 \
+                 + self.A \
+                 * (math.exp(-0.5 * (math.log(max(self.W / self.W0, 1), np.e)) / self.B)) ** 2
 
 
-# 10 parts
 class TSoilPart():
     def __init__(self, layers_num, depth):
-        self.SoilSurface = TSoilSurface()
-        self.SoilLayers = []
+        self.soilSurface = TSoilSurface()
+        self.soilLayers = []
         dh = depth / layers_num
         h = 0
         for i in range(layers_num):
-            self.SoilLayers.append(TSoiltLayer(T=0, W=0, dh=dh, h=h))
+            self.soilLayers.append(TSoiltLayer(T=0, W=0, dh=dh, h=h))
             h += dh
 
+    def calculate_temperature_in_layers(self):
+        # TODO
+        for layer in self.soilLayers:
+            layer.calculate_temperature()
 
-# ------------------------------- AgroEcoSystem --------------------------------------------
+        # ------------------------------- AgroEcoSystem --------------------------------------------
+
+
 class TAgroEcoSystem():
     def __init__(self, airPart: TAirPart, layers_num, depth):
         self.airPart = airPart

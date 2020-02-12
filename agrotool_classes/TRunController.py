@@ -34,7 +34,7 @@ class TRunController():
             layers_num=modelDict['N_SOIL_LAYERS'],
             depth=modelDict['SOIL_DEPTH']
         )
-        self.timeStep = timedelta(
+        self.stepTimeDelta = timedelta(
             hours=modelDict['TIME_STEP']['HOURS'],
             minutes=modelDict['TIME_STEP']['MINUTES'],
             seconds=modelDict['TIME_STEP']['SECONDS']
