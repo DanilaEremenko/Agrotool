@@ -1,6 +1,7 @@
 {
   "InitialState": {
     "WaterStorage": 21.00,
+    "Temperature": 4.00,
     "MineralNitrogen": 10.00,
     "ShootLitter": "TODO",
     "RootLitter": "TODO"
