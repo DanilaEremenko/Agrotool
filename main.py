@@ -278,6 +278,10 @@ def main():
         placePath="environments/test_1/place.json"
 
     )
+
+    hRunningController.update_params()
+    hRunningController.init_start(jsonPath='environments/test_1/initial_state.json')
+
     ContinousRunning(hRunningController=hRunningController)
 
 

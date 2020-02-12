@@ -2,7 +2,6 @@
 from agrotool_lib.DebugInspector import whoami
 import copy
 from datetime import datetime
-import numpy as np
 import math
 
 
@@ -69,6 +68,7 @@ class TIndividualtPlant():
 
 
 # ------------------------------- Environment parts --------------------------------------------
+# ------------------ Air --------------------------
 class TAirPart():
     def __init__(self):
         self.SumSnow = 0  # TODO
@@ -78,6 +78,7 @@ class TAirPart():
         self.SumRad = 0
 
 
+# ------------------ Crop --------------------------
 class TCropPart():
     def __init__(self):
         self.Esoil = 0
@@ -87,9 +88,33 @@ class TCropPart():
         self.Individual_Plant = TIndividualtPlant()
 
 
+# ------------------ Soil --------------------------
 class TSoilSurface():
     def __init__(self):
         pass
+
+
+class TLayerParams():
+    def __init__(self):
+        self.K0 = 0
+        self.W0 = 0
+        self.A = 0
+        self.B = 0
+        self.C1 = 0
+        self.C2 = 0
+        self.Wfc = 0
+
+    def update(self):
+        # TODO these params should be calculated
+        self.K0 = 1.8E-7
+        self.W0 = 0.31
+        self.A = 2.7E-7
+        self.B = 0.16
+        self.C1 = 1.22E6
+        self.C2 = 4.17E6
+        self.Wfc = 0.45
+        self.C = 0
+        self.D = 0
 
 
 class TSoiltLayer():
@@ -102,25 +127,15 @@ class TSoiltLayer():
         self.W = W
         self.dh = dh
         self.h = h
-        # TODO these params should me calculated
-        self.K0 = 1.8E-7
-        self.W0 = 0.31
-        self.A = 2.7E-7
-        self.B = 0.16
-        self.C1 = 1.22E6
-        self.C2 = 4.17E6
-        self.Wfc = 0.45
+        self.params = TLayerParams()
 
-        self.C = 0
-        self.D = 0
-
-    def calculate_temperature(self):
-        self.C = self.C1 + self.C2 * self.W
+    def calculate_termo_params(self):
+        self.params.C = self.params.C1 + self.params.C2 * self.W
 
         # K0 + A * exp(-0.5 * sqr(ln(W / W0) / B))
-        self.D = self.K0 \
-                 + self.A \
-                 * (math.exp(-0.5 * (math.log(max(self.W / self.W0, 1), np.e)) / self.B)) ** 2
+        self.params.D = self.params.K0 \
+                        + self.params.A \
+                        * math.exp(-0.5 * ((math.log(self.W / self.params.W0) / self.params.B) ** 2))
 
 
 class TSoilPart():
@@ -136,11 +151,19 @@ class TSoilPart():
     def calculate_temperature_in_layers(self):
         # TODO
         for layer in self.soilLayers:
-            layer.calculate_temperature()
+            layer.calculate_termo_params()
 
-        # ------------------------------- AgroEcoSystem --------------------------------------------
+    def init_start(self, T, W):
+        for layer in self.soilLayers:
+            layer.T = T
+            layer.W = W / 100
+
+    def update_params(self):
+        for layer in self.soilLayers:
+            layer.params.update()
 
 
+# ------------------------------- AgroEcoSystem --------------------------------------------
 class TAgroEcoSystem():
     def __init__(self, airPart: TAirPart, layers_num, depth):
         self.airPart = airPart
