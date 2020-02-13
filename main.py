@@ -282,7 +282,7 @@ def ContinousRunning(hRunningController: TRunController):
 
 def main():
     hRunningController = TRunController(
-        weatherPath="environments/test_1/weather.json",
+        weatherPath="environments/test_1/weather1.json",
         modelPath="environments/test_1/model_params.json",
         placePath="environments/test_1/place.json"
 
