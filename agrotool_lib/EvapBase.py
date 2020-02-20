@@ -18,7 +18,7 @@ def SoilTemperature(cSystem: TAgroEcoSystem, T_curr):
 
     for i, layer in enumerate(cSystem.soilPart.soilLayers):
         T_0[i] = layer.T
-        D_arr[i] = 0.01 / layer.params.D  # TODO great bone
+        D_arr[i] = layer.params.C * layer.params.D  # Это правильно
         C_arr[i] = layer.params.C
 
     T_0[0] = T_curr
