@@ -1,12 +1,16 @@
 # TODO check classes
 import json
 
+from agrotool_lib import thIdent
 from agrotool_lib.DebugInspector import whoami
 import copy
 from datetime import datetime
 import math
 import pandas as pd
 import numpy as np
+
+from agrotool_mappings.SoilTextureTriangle import get_texture_by_conc, get_info_by_texture
+from agrotool_mappings.USDA_mapping import get_params_dict_by_texture
 
 
 class TWeatherRecord():
@@ -100,25 +104,26 @@ class TSoilSurface():
 
 class TLayerParams():
     def __init__(self):
+
+        # soil
         self.K0 = 0
         self.W0 = 0
         self.A = 0
         self.B = 0
         self.C1 = 0
         self.C2 = 0
-        self.Wfc = 0
 
-    def update_termo(self, layer_params_df):
-        from agrotool_lib import thIdent
-        res, is_okay = thIdent.identify(
-            texture=layer_params_df['Texture'],
-            sand=layer_params_df['Sand'],
-            silt=layer_params_df['Silt'],
-            clay=layer_params_df['Clay'],
-            bd=layer_params_df['Bd'],
-            cc=layer_params_df['Corg']
-        )
+        # water
+        self.Wfc = 0  # полевая влагоемкость
+        self.Wz = 0  # влажность завядния
+        self.tet_min = 0  # наименьшая влагоемкость
+        self.tet_max = 0  # наибольшая влагоемкость (пористость)
+        self.alpha_1 = 0  #
+        self.beta_1 = 0
+        self.beta_2 = 0
+        self.Kf = 0  # базовый коэффициент филтрации
 
+    def update_termo(self, res):
         self.K0 = res[1] * 1E-7
         self.W0 = res[2]
         self.A = res[3] * 1E-7
@@ -134,12 +139,40 @@ class TLayerParams():
         self.C = 0
         self.D = 0
 
-    def update_water(self, layer_params_df):
+    def update_water(self, texture):
+        params_dict = get_params_dict_by_texture(texture)
+
         self.Wfc = 0.45
+        self.tet_min = params_dict['Tr']
+        self.tet_max = params_dict['Ts']
+        self.Kf = params_dict['Ks']
 
     def update(self, layer_params_df):
-        self.update_termo(layer_params_df)
-        self.update_water(layer_params_df)
+        texture = layer_params_df['Texture']
+        if texture is None:
+            texture, textType = get_texture_by_conc(sand=layer_params_df['Sand'],
+                                                    silt=layer_params_df['Silt'],
+                                                    clay=layer_params_df['Clay'])
+        else:
+            textType = get_info_by_texture(texture)['textType']
+
+        print("texture = %s (sand = %.2f, silt = %.2f, clay = %.2f)" % (texture,
+                                                                        layer_params_df['Sand'],
+                                                                        layer_params_df['Silt'],
+                                                                        layer_params_df['Clay']))
+
+        # TODO replace with new realization
+        res, is_okay = thIdent.identify(
+            textType=textType,
+            sand=layer_params_df['Sand'],
+            silt=layer_params_df['Silt'],
+            clay=layer_params_df['Clay'],
+            bd=layer_params_df['Bd'],
+            cc=layer_params_df['Corg']
+        )
+
+        self.update_termo(res)
+        self.update_water(texture)
 
 
 class TSoiltLayer():
@@ -193,8 +226,8 @@ class TSoilPart():
         return pd.DataFrame(
             {
                 # TODO bad case if no top layer
-                # 'Depth': np.array([20, 25, 35, 40, 60, 100, 200]) / 100,
-                'Depth': np.array([0, 5, 15, 30, 60, 100, 200]) / 100,
+                'Depth': np.array([20, 25, 35, 40, 60, 61, 62]) / 100,
+                # 'Depth': np.array([0, 5, 15, 30, 60, 100, 200]) / 100,
                 'Texture': [None, None, None, None, None, None, None],
                 'Bd': list(solid_dict['properties']['BLDFIE']['M'].values()),
                 'Corg': list(solid_dict['properties']['ORCDRC']['M'].values()),

@@ -28,8 +28,6 @@
 
 from math import exp, sqrt, log as ln
 
-from agrotool_lib.SoilTextureTriangle import get_texture_by_conc, get_info_by_texture
-
 
 def table6(cType):
     r = [0, 0, 0, 0, 0, -1, -1]
@@ -355,12 +353,7 @@ def isProper(res):
     return (res[1] > 0) and (res[2] > 0) and (res[3] > 0) and (res[4] > 0.1)
 
 
-def identify(texture, sand, silt, clay, bd, cc):
-    if texture is None:
-        texture, textType = get_texture_by_conc(sand=sand, silt=silt, clay=clay)
-    else:
-        textType = get_info_by_texture(texture)['textType']
-
+def identify(textType, sand, silt, clay, bd, cc):
     res = [0, -1, -1, -1, -1, -1, -1]
     snd = 30
     okay_ident = False
