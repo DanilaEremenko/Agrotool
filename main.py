@@ -288,7 +288,7 @@ def main():
 
     )
 
-    hRunningController.update_params()
+    hRunningController.update_params('environments/test_1/query_solidgrids.json')
     hRunningController.init_start(jsonPath='environments/test_1/initial_state.json')
 
     ContinousRunning(hRunningController=hRunningController)

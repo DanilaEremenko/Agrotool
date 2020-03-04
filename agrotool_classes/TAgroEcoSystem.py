@@ -1,8 +1,12 @@
 # TODO check classes
+import json
+
 from agrotool_lib.DebugInspector import whoami
 import copy
 from datetime import datetime
 import math
+import pandas as pd
+import numpy as np
 
 
 class TWeatherRecord():
@@ -104,17 +108,39 @@ class TLayerParams():
         self.C2 = 0
         self.Wfc = 0
 
-    def update(self):
+    def update_termo(self, layer_params_df):
         # TODO these params should be calculated
-        self.K0 = 1.8E-7
-        self.W0 = 0.31
-        self.A = 2.7E-7
-        self.B = 0.16
-        self.C1 = 1.22E6
-        self.C2 = 4.17E6
-        self.Wfc = 0.45
+        import thIdent
+        res, is_okay = thIdent.identify(
+            texture=layer_params_df['Texture'],
+            sand=layer_params_df['Sand'],
+            silt=layer_params_df['Silt'],
+            clay=layer_params_df['Clay'],
+            bd=layer_params_df['Bd'],
+            cc=layer_params_df['Corg']
+        )
+
+        self.K0 = res[1] * 1E-7
+        self.W0 = res[2]
+        self.A = res[3] * 1E-7
+        self.B = res[4]
+        self.C1 = res[5]
+        self.C2 = res[6]
+
+        if self.W0 == 0:
+            print()
+        if self.B == 0:
+            print()
+
         self.C = 0
         self.D = 0
+
+    def update_water(self, layer_params_df):
+        self.Wfc = 0.45
+
+    def update(self, layer_params_df):
+        self.update_termo(layer_params_df)
+        self.update_water(layer_params_df)
 
 
 class TSoiltLayer():
@@ -127,6 +153,7 @@ class TSoiltLayer():
         self.W = W
         self.dh = dh
         self.h = h
+        self.rep_h = h + dh / 2
         self.params = TLayerParams()
 
     def calculate_termo_params(self):
@@ -158,9 +185,73 @@ class TSoilPart():
             layer.T = T
             layer.W = W / 100
 
-    def update_params(self):
+    def read_soil_file(self, path_solid, format='ISRIC'):
+        # ISRIC,ICASA
+        with open(path_solid) as solid_fp:
+            solid_dict = json.load(solid_fp)
+
+        tab_len = len(solid_dict['properties']['CLYPPT']['M'].values())
+        return pd.DataFrame(
+            {
+                # TODO
+                # 'Depth': np.array([20, 25, 35, 40, 60, 100, 200]) / 100,
+                'Depth': np.array([0, 5, 15, 30, 60, 100, 200]) / 100,
+                'Texture': [None, None, None, None, None, None, None],
+                'Bd': list(solid_dict['properties']['BLDFIE']['M'].values()),
+                'Corg': list(solid_dict['properties']['ORCDRC']['M'].values()),
+                'Sand': list(solid_dict['properties']['SNDPPT']['M'].values()),
+                'Silt': list(solid_dict['properties']['SLTPPT']['M'].values()),
+                'Clay': list(solid_dict['properties']['CLYPPT']['M'].values()),
+                'Wz': list(solid_dict['properties']['WWP']['M'].values()),
+                'Fc': [None, None, None, None, None, None, None]
+            }
+        )
+
+    def prepare_soil_layer_data(self, df):
+        def get_param(key, layer, is_str=True):
+            b_i = list(bottom_layer.index)[0]
+            t_i = list(top_layer.index)[0]
+
+            if bottom_layer.loc[b_i, key] is None and bottom_layer.loc[b_i, key] is None:
+                return None
+            elif bottom_layer.loc[b_i, key] is None:
+                return top_layer.loc[t_i, key]
+            elif bottom_layer.loc[b_i, key] is None:
+                return bottom_layer.loc[b_i, key]
+            elif is_str:
+                if abs(bottom_layer['Depth'] - layer.rep_h) < abs(top_layer['Depth'] - layer.rep_h):
+                    return bottom_layer[key]
+                else:
+                    return top_layer[key]
+            else:
+                return (bottom_layer.loc[b_i, key] * (layer.rep_h - top_layer.loc[t_i, 'Depth']) +
+                        top_layer.loc[t_i, key] * (bottom_layer.loc[b_i, 'Depth'] - layer.rep_h)) / \
+                       (bottom_layer.loc[b_i, 'Depth'] - top_layer.loc[t_i, 'Depth'])
+
+        df = pd.DataFrame(df)
+        df = df.drop(df[df['Depth'] < 0.07][df['Bd'] < 1000].index)
+
+        new_dict = {'Depth': [], 'Texture': [], 'Bd': [], 'Corg': [], 'Sand': [], 'Silt': [], 'Clay': [], 'Wz': [],
+                    'Fc': []}
         for layer in self.soilLayers:
-            layer.params.update()
+            top_layer = df[df['Depth'] <= layer.rep_h]
+            top_layer = top_layer[top_layer['Depth'] == max(top_layer['Depth'])]
+            bottom_layer = df[df['Depth'] > layer.rep_h]
+            bottom_layer = bottom_layer[bottom_layer['Depth'] == min(bottom_layer['Depth'])]
+
+            new_dict['Depth'].append(layer.rep_h)
+            new_dict['Texture'].append(get_param('Texture', layer, True))
+            for key in ('Bd', 'Corg', 'Sand', 'Silt', 'Clay', 'Wz', 'Fc'):
+                new_dict[key].append(get_param(key, layer, False))
+
+        return pd.DataFrame(new_dict)
+
+    def update_params(self, solid_path):
+        df = self.read_soil_file(solid_path)
+        new_df = self.prepare_soil_layer_data(df)
+
+        for i, layer in enumerate(self.soilLayers):
+            layer.params.update(new_df.iloc[i])
 
 
 # ------------------------------- AgroEcoSystem --------------------------------------------

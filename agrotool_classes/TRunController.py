@@ -58,9 +58,9 @@ class TRunController():
         init_json = self._parse_json(json_path=jsonPath, key='InitialState')
         self.agroEcoSystem.soilPart.init_start(T=init_json['Temperature'], W=init_json['WaterStorage'])
 
-    def update_params(self):
+    def update_params(self, solid_path):
         # TODO add other systems
-        self.agroEcoSystem.soilPart.update_params()
+        self.agroEcoSystem.soilPart.update_params(solid_path)
 
     def getCurrentDay(self):
         return self.weatherDf[self.currDay]
