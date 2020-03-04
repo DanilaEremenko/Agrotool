@@ -25,16 +25,12 @@
 # 11 - Silty clay
 # 12 - Clay
 # *)
-r = [0, 0, 0, 0, 0, 0]
-rs = [0, 0, 0, 0, 0, 0]
-Clay = 0
 
 from math import exp, sqrt, log as ln
 
 
 def table6(cType):
-    r[5] = -1.0
-    r[6] = -1.0
+    r = [0, 0, 0, 0, 0, -1, -1]
 
     if cType == 11:
         r[1] = 1.019
@@ -111,22 +107,21 @@ def table6(cType):
 
 
 def table13(sand, silt, clay, cc):
-    r[5] = -1.0
-    r[6] = -1.0
+    r = [0, 0, 0, 0, 0, -1, -1]
     if (sand < 15):
         r[1] = -0.027475 + 0.073868 * sand - 0.160208 * cc + 0.028535 * silt
         r[3] = 3.177718 - 0.166438 * cc + 0.062028 * sand - 0.015554 * silt
         r[2] = 0.081161 + 0.005042 * silt - 902600 * 1e-7 * r[1] + 467560 * 1e-7 * r[3] + 0.004928 * sand
         r[4] = 0.062381 + 0.035256 * sand + 0.048389 * cc
 
-    if ((sand >= 15) and (sand < 65)):
+    elif ((sand >= 15) and (sand < 65)):
         r[1] = 3.888488 - 0.067144 * clay - 0.245297 * cc
         r[3] = 4.072918 - 0.486439 * cc - 0.034405 * clay
         r[2] = 0.46794 - 500950 * 1e-7 * r[1]
         r[4] = -0.958759 + 0.094356 * cc + 2780710 * 1e-7 * r[1] + 1.438943 * r[2] + 0.012195 * clay - 622380 * 1e-7 * \
                r[3]
 
-    if (sand >= 65):
+    elif (sand >= 65):
         r[1] = 15.10342 - 0.13037 * sand - 0.7504 * cc - 0.04103 * silt
         r[3] = 5.70508 - 1.64478 * cc
         r[2] = 0.258403 + 0.026259 * cc - 0.003253 * silt - 129290 * 1e-7 * r[3]
@@ -136,8 +131,7 @@ def table13(sand, silt, clay, cc):
 
 
 def table10(cType, sand, silt, clay):
-    r[5] = -1.0
-    r[6] = -1.0
+    r = [0, 0, 0, 0, 0, -1, -1]
     if cType == 11:
         r[3] = -1.31183 + 0.07295 * clay - 0.15008 * sand
         # {a}
@@ -179,8 +173,8 @@ def table10(cType, sand, silt, clay):
 
 
 def table11(cType, sand, silt, clay, bd):
-    r[5] = -1.0
-    r[6] = -1.0
+    r = [0, 0, 0, 0, 0, -1, -1]
+
     if cType == 11:
         r[3] = -1.14049 + 0.00260107 * bd
         r[1] = 0.266245 - 7860030 * 1E-7 * r[3] + 0.001912604 * bd
@@ -221,9 +215,7 @@ def table11(cType, sand, silt, clay, bd):
 
 
 def table12(cType, sand, silt, clay, cc):
-    r[5] = -1.0
-    r[6] = -1.0
-
+    r = [0, 0, 0, 0, 0, -1, -1]
     if cType == 11:
         r[3] = -1.31183 + 0.07295 * clay - 0.15008 * sand
         r[1] = 4.415549 - 3569660 * 1E-7 * r[3] - 0.154774 * cc - 0.047451 * clay
@@ -262,8 +254,8 @@ def table12(cType, sand, silt, clay, cc):
 
 
 def u_model(sand, silt, clay, bd, cc, mode):
-    r[5] = -1.0
-    r[6] = -1.0
+    r = [0, 0, 0, 0, 0, -1, -1]
+
     if mode == 1:  # SSC
         r[1] = 3.030598 - 0.042688 * clay
         r[3] = 1.216889 + 0.026983 * sand + 3092420 * 1E-7 * r[1]
@@ -358,22 +350,29 @@ def table2a(mode, tt):
 
 def isProper(res):
     # TODO: плюс дополнительные проверки от Арханельской
-    isProper = (res[1] > 0) and (res[2] > 0) and (res[3] > 0) and (res[4] > 0.1)
+    return (res[1] > 0) and (res[2] > 0) and (res[3] > 0) and (res[4] > 0.1)
 
 
-def identify(textType, sand, silt, clay, bd, cc, res):
-    # ��� ��������
-    global rs
-    rs[1] = -1.0
-    rs[2] = -1.0
-    rs[3] = -1.0
-    rs[4] = -1.0
-    rs[5] = -1.0
-    rs[6] = -1.0
+def getTextureFromTriangle(sand, silt, clay):
+    # TODO add full calculating
+    if ((sand is None) or (silt is None) or (clay is None)):
+        return {"name": None, "textType": -1}
+    else:
+        return {"name": "sandy", "textType": 1}
+
+
+def identify(texture, sand, silt, clay, bd, cc):
+    # TODO full mappind
+    if texture is None:
+        textureMap = getTextureFromTriangle(sand, silt, clay)
+        textType = textureMap['textType']
+        
+
+    res = [0, -1, -1, -1, -1, -1, -1]
     snd = 30
-    rslt = False
-    if ((sand < 0) or (silt < 0) or (clay < 0)):
-        rs = table6(textType)
+    okay_ident = False
+    if ((sand is None) or (silt is None) or (clay is None)):
+        res = table6(textType)
         if textType == 1:
             snd = 90
         elif textType == 2:
@@ -398,85 +397,81 @@ def identify(textType, sand, silt, clay, bd, cc, res):
             snd = 8
         elif textType == 12:
             snd = 25
-        rslt = True
+        okay_ident = True
     else:
 
         # ����������� ���������� ������������� �� ssc
-        if ((sand >= 0) and (silt >= 0) and (clay >= 0)):
-
+        if ((sand is not None) and (silt is not None) and (clay is not None)):
+            okay_ident = True
             snd = sand
             isSGroup = (textType == 7) or (textType == 8) or (textType < 4)
             if (isSGroup):
-                if (cc > 0):
-                    rs = table13(sand, silt, clay, cc)
-                    if (not isProper(rs)):
-                        rs = u_model(sand, silt, clay, bd, cc, 3)
-                    if ((not isProper(rs)) and (bd > 0)):
-                        rs = u_model(sand, silt, clay, bd, cc, 2)
-                    if (not isProper(rs)):
-                        rs = u_model(sand, silt, clay, bd, cc, 1)
-                    if (not isProper(rs)):
-                        rs = table6(textType)
+                if (cc is not None):
+                    res = table13(sand, silt, clay, cc)
+                    if (not isProper(res)):
+                        res = u_model(sand, silt, clay, bd, cc, 3)
+                    if ((not isProper(res)) and (bd is not None)):
+                        res = u_model(sand, silt, clay, bd, cc, 2)
+                    if (not isProper(res)):
+                        res = u_model(sand, silt, clay, bd, cc, 1)
+                    if (not isProper(res)):
+                        res = table6(textType)
 
                 else:
-                    rs = table6(textType)
+                    res = table6(textType)
 
             else:
 
-                if (cc > 0):
+                if (cc is not None):
 
-                    rs = table12(textType, sand, silt, clay, cc)
-                    if (not isProper(rs)):
-                        rs = u_model(sand, silt, clay, bd, cc, 3)
-                    if ((not isProper(rs)) and (bd > 0)):
-                        rs = u_model(sand, silt, clay, bd, cc, 2)
-                    if (not isProper(rs)):
-                        rs = u_model(sand, silt, clay, bd, cc, 1)
-                    if (not isProper(rs)):
-                        rs = table6(textType)
+                    res = table12(textType, sand, silt, clay, cc)
+                    if (not isProper(res)):
+                        res = u_model(sand, silt, clay, bd, cc, 3)
+                    if ((not isProper(res)) and (bd is not None)):
+                        res = u_model(sand, silt, clay, bd, cc, 2)
+                    if (not isProper(res)):
+                        res = u_model(sand, silt, clay, bd, cc, 1)
+                    if (not isProper(res)):
+                        res = table6(textType)
 
                 else:
 
-                    if (bd > 0):
-                        rs = table11(textType, sand, silt, clay, bd)
-                        if (not isProper(rs)):
-                            rs = u_model(sand, silt, clay, bd, cc, 2)
-                        if (not isProper(rs)):
-                            rs = u_model(sand, silt, clay, bd, cc, 1)
-                        if (not isProper(rs)):
-                            rs = table6(textType)
+                    if (bd is not None):
+                        res = table11(textType, sand, silt, clay, bd)
+                        if (not isProper(res)):
+                            res = u_model(sand, silt, clay, bd, cc, 2)
+                        if (not isProper(res)):
+                            res = u_model(sand, silt, clay, bd, cc, 1)
+                        if (not isProper(res)):
+                            res = table6(textType)
 
                     else:
-                        rs = table10(textType, sand, silt, clay)
-                        if (not isProper(rs)):
-                            rs = u_model(sand, silt, clay, bd, cc, 1)
-                        if (not isProper(rs)):
-                            rs = table6(textType)
+                        res = table10(textType, sand, silt, clay)
+                        if (not isProper(res)):
+                            res = u_model(sand, silt, clay, bd, cc, 1)
+                        if (not isProper(res)):
+                            res = table6(textType)
 
-                rslt = True
+    if (okay_ident):
+        if (bd is None):
 
-    if (rslt):
-        if (bd < 0):
-
-            if (cc >= 0):
+            if (cc is not None):
                 bd = 1556 * exp(-0.0 * cc)
             else:
-                if (clay >= 0):
-                    bd = 1522.4 - 5 * Clay
+                if (clay is not None):
+                    bd = 1522.4 - 5 * clay
                 else:
                     bd = table2a(1, textType)
 
-        if (cc < 0):
+        if (cc is None):
             cc = table2a(2, textType)
 
-        hc = cc * 0.0197
-        cms = 1924.64 * hc + 746.1453 * (1 - hc)
-        rs[5] = cms * bd
-        rs[6] = 4175470.6
+    hc = cc * 0.0197
+    cms = 1924.64 * hc + 746.1453 * (1 - hc)
+    res[5] = cms * bd
+    res[6] = 4175470.6
 
-    for j in range(1, 6):
-        res[j] = rs[j]
-    return rslt
+    return res, okay_ident
 
 
 def calculateK(w, k0, w0, a, b):
