@@ -13,7 +13,6 @@ from agrotool_lib.WaterSoilDynamics import WaterSoilDynamics
 from agrotool_lib.Development import RecalculateBioTime
 from agrotool_lib.NitBal import RecalculateSoilNitrogen
 from agrotool_lib.Growing import Growth
-from agrotool_lib.OutputData import TextOutput
 from agrotool_lib.Snowmelt import popov_melting
 
 from datetime import datetime, timedelta
@@ -95,15 +94,9 @@ def OneDayStep(hRunningController: TRunController,
         ##########################################################################
         pretty_print('Step6')
         # Запоминаем приходящщу радиацию
-        print("BEFORE:Air.SumRad = %d" % hRunningController.agroEcoSystem.airPart.SumRad)
-        print("BEFORE:Crop.RshPlant = %d" % hRunningController.agroEcoSystem.cropPart.RshPlant)
-        print("BEFORE:Crop.corp = %d" % hRunningController.agroEcoSystem.cropPart.copr)
         # Запоминаем почвенну радиацию
         # RadPhotosynthesis(hRunningController.agroEcoSystem, False)#TODO
         hRunningController.agroEcoSystem.airPart.SumRad = GetCurrSumRad(fi, cDateTime, stepTimeDelta)
-        print("AFTER:Air.SumRad = %d" % hRunningController.agroEcoSystem.airPart.SumRad)
-        print("AFTER:Crop.RshPlant = %d" % hRunningController.agroEcoSystem.cropPart.RshPlant)
-        print("AFTER:Crop.corp = %d" % hRunningController.agroEcoSystem.cropPart.copr)
 
         ##########################################################################
         # --------------------- Водные потоки.Транспирация -----------------------
@@ -166,19 +159,12 @@ def OneDayStep(hRunningController: TRunController,
         hRunningController.agroEcoSystem.refreshing()
         hRunningController.agroEcoSystem.airPart.SumSnow = sumSnow
 
-        pretty_print('Step16')
-        # Добивание очередной строчки в файл выходных параметров
-        TextOutput(hRunningController.agroEcoSystem, False)
-
         pretty_print('Step17')
 
         pretty_print('Step18')
         # Его присвоение
         hRunningController.agroEcoSystem.airPart.currentEnv = cWR
         bTime = hRunningController.agroEcoSystem.cropPart.Individual_Plant.Ph_Time
-
-        pretty_print('Step19')
-        TextOutput(hRunningController.agroEcoSystem, False)
 
         ##########################################################################
         # ------------------------------ weather history -------------------------
