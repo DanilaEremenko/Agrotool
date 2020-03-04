@@ -109,8 +109,7 @@ class TLayerParams():
         self.Wfc = 0
 
     def update_termo(self, layer_params_df):
-        # TODO these params should be calculated
-        import thIdent
+        from agrotool_lib import thIdent
         res, is_okay = thIdent.identify(
             texture=layer_params_df['Texture'],
             sand=layer_params_df['Sand'],
@@ -193,7 +192,7 @@ class TSoilPart():
         tab_len = len(solid_dict['properties']['CLYPPT']['M'].values())
         return pd.DataFrame(
             {
-                # TODO
+                # TODO bad case if no top layer
                 # 'Depth': np.array([20, 25, 35, 40, 60, 100, 200]) / 100,
                 'Depth': np.array([0, 5, 15, 30, 60, 100, 200]) / 100,
                 'Texture': [None, None, None, None, None, None, None],
@@ -208,25 +207,36 @@ class TSoilPart():
         )
 
     def prepare_soil_layer_data(self, df):
-        def get_param(key, layer, is_str=True):
-            b_i = list(bottom_layer.index)[0]
-            t_i = list(top_layer.index)[0]
+        def _get_param(key, layer, is_str=True):
 
-            if bottom_layer.loc[b_i, key] is None and bottom_layer.loc[b_i, key] is None:
+            # None layers processing
+            if bottom_layer is None and top_layer is None:
+                raise Exception("No neighbour layers")
+            elif bottom_layer is None:
+                return top_layer.iloc[0][key]
+            elif top_layer is None:
+                return bottom_layer.iloc[0][key]
+
+            # df layers processing
+            if bottom_layer.iloc[0][key] is None and bottom_layer.iloc[0][key] is None:
                 return None
-            elif bottom_layer.loc[b_i, key] is None:
-                return top_layer.loc[t_i, key]
-            elif bottom_layer.loc[b_i, key] is None:
-                return bottom_layer.loc[b_i, key]
+            elif bottom_layer.iloc[0][key] is None:
+                return top_layer.iloc[key]
+            elif bottom_layer.iloc[0][key] is None:
+                return bottom_layer.iloc[key]
+
+            # str processing
             elif is_str:
                 if abs(bottom_layer['Depth'] - layer.rep_h) < abs(top_layer['Depth'] - layer.rep_h):
                     return bottom_layer[key]
                 else:
                     return top_layer[key]
+
+            # have all that we need processing
             else:
-                return (bottom_layer.loc[b_i, key] * (layer.rep_h - top_layer.loc[t_i, 'Depth']) +
-                        top_layer.loc[t_i, key] * (bottom_layer.loc[b_i, 'Depth'] - layer.rep_h)) / \
-                       (bottom_layer.loc[b_i, 'Depth'] - top_layer.loc[t_i, 'Depth'])
+                return (bottom_layer.iloc[0][key] * (layer.rep_h - top_layer.iloc[0]['Depth']) +
+                        top_layer.iloc[0][key] * (bottom_layer.iloc[0]['Depth'] - layer.rep_h)) / \
+                       (bottom_layer.iloc[0]['Depth'] - top_layer.iloc[0]['Depth'])
 
         df = pd.DataFrame(df)
         df = df.drop(df[df['Depth'] < 0.07][df['Bd'] < 1000].index)
@@ -234,15 +244,26 @@ class TSoilPart():
         new_dict = {'Depth': [], 'Texture': [], 'Bd': [], 'Corg': [], 'Sand': [], 'Silt': [], 'Clay': [], 'Wz': [],
                     'Fc': []}
         for layer in self.soilLayers:
-            top_layer = df[df['Depth'] <= layer.rep_h]
-            top_layer = top_layer[top_layer['Depth'] == max(top_layer['Depth'])]
-            bottom_layer = df[df['Depth'] > layer.rep_h]
-            bottom_layer = bottom_layer[bottom_layer['Depth'] == min(bottom_layer['Depth'])]
 
+            # define top layer
+            top_layer = df[df['Depth'] <= layer.rep_h]
+            if not top_layer.empty:
+                top_layer = top_layer[top_layer['Depth'] == max(top_layer['Depth'])]
+            else:
+                top_layer = None
+
+            # define bottom layer
+            bottom_layer = df[df['Depth'] > layer.rep_h]
+            if not bottom_layer.empty:
+                bottom_layer = bottom_layer[bottom_layer['Depth'] == min(bottom_layer['Depth'])]
+            else:
+                bottom_layer = None
+
+            # define out layer
             new_dict['Depth'].append(layer.rep_h)
-            new_dict['Texture'].append(get_param('Texture', layer, True))
+            new_dict['Texture'].append(_get_param('Texture', layer, True))
             for key in ('Bd', 'Corg', 'Sand', 'Silt', 'Clay', 'Wz', 'Fc'):
-                new_dict[key].append(get_param(key, layer, False))
+                new_dict[key].append(_get_param(key, layer, False))
 
         return pd.DataFrame(new_dict)
 
