@@ -1,0 +1,585 @@
+{
+    "type": "Feature", 
+    "geometry": {
+        "type": "Point", 
+        "coordinates": [
+            -101.54496152139383, 
+            50.81807467570982
+        ]
+    }, 
+    "crs": {
+        "type": "name", 
+        "properties": {
+            "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+    }, 
+    "timestamp": "1581499012.74", 
+    "raw": true, 
+    "properties": {
+        "soilmask": "soil", 
+        "ALUM3S": {
+            "units_of_measure": "ppm", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "AWCh1": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 24, 
+                "sl2": 18, 
+                "sl3": 16, 
+                "sl4": 15, 
+                "sl5": 14, 
+                "sl6": 14, 
+                "sl7": 14
+            }
+        }, 
+        "AWCh2": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 19, 
+                "sl2": 14, 
+                "sl3": 12, 
+                "sl4": 12, 
+                "sl5": 11, 
+                "sl6": 11, 
+                "sl7": 11
+            }
+        }, 
+        "AWCh3": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 16, 
+                "sl2": 12, 
+                "sl3": 10, 
+                "sl4": 9, 
+                "sl5": 9, 
+                "sl6": 9, 
+                "sl7": 9
+            }
+        }, 
+        "AWCtS": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 67, 
+                "sl2": 54, 
+                "sl3": 47, 
+                "sl4": 44, 
+                "sl5": 41, 
+                "sl6": 41, 
+                "sl7": 40
+            }
+        }, 
+        "BDRICM": {
+            "units_of_measure": "cm", 
+            "M": {
+                "BDRICM_M": 200
+            }
+        }, 
+        "BDRLOG": {
+            "units_of_measure": "percent", 
+            "M": {
+                "BDRLOG_M": 3
+            }
+        }, 
+        "BDTICM": {
+            "units_of_measure": "cm", 
+            "M": {
+                "BDTICM_M": 3990
+            }
+        }, 
+        "BLDFIE": {
+            "units_of_measure": "kg / cubic-m", 
+            "M": {
+                "sl1": 657, 
+                "sl2": 1072, 
+                "sl3": 1293, 
+                "sl4": 1386, 
+                "sl5": 1486, 
+                "sl6": 1478, 
+                "sl7": 1491
+            }
+        }, 
+        "CECSOL": {
+            "units_of_measure": "cmol / kg", 
+            "M": {
+                "sl1": 47, 
+                "sl2": 42, 
+                "sl3": 33, 
+                "sl4": 30, 
+                "sl5": 25, 
+                "sl6": 23, 
+                "sl7": 22
+            }
+        }, 
+        "CLYPPT": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 22, 
+                "sl2": 22, 
+                "sl3": 24, 
+                "sl4": 24, 
+                "sl5": 23, 
+                "sl6": 23, 
+                "sl7": 22
+            }
+        }, 
+        "CRFVOL": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 1, 
+                "sl2": 1, 
+                "sl3": 1, 
+                "sl4": 2, 
+                "sl5": 2, 
+                "sl6": 3, 
+                "sl7": 5
+            }
+        }, 
+        "DRAINFAO": {
+            "units_of_measure": "factor", 
+            "M": {
+                "DRAINFAO_M": null
+            }
+        }, 
+        "EALKCL": {
+            "units_of_measure": "cmolc / kg", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "ECAX": {
+            "units_of_measure": "cmolc / kg", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "EMGX": {
+            "units_of_measure": "cmolc / kg", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "ENAX": {
+            "units_of_measure": "cmolc / kg", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "EXKX": {
+            "units_of_measure": "cmolc / kg", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "GLC100m": {
+            "units_of_measure": "factor", 
+            "M": {
+                "GLC2010": 10
+            }
+        }, 
+        "NTO": {
+            "units_of_measure": "g / kg", 
+            "M": {
+                "xd1": null, 
+                "xd2": null
+            }
+        }, 
+        "OCSTHA": {
+            "units_of_measure": "tonnes / ha", 
+            "M": {
+                "sd1": 30, 
+                "sd2": 42, 
+                "sd3": 27, 
+                "sd4": 20, 
+                "sd5": 19, 
+                "sd6": 78
+            }
+        }, 
+        "ORCDRC": {
+            "units_of_measure": "g / kg", 
+            "M": {
+                "sl1": 123, 
+                "sl2": 62, 
+                "sl3": 19, 
+                "sl4": 0, 
+                "sl5": 0, 
+                "sl6": 0, 
+                "sl7": 10
+            }
+        }, 
+        "PHIHOX": {
+            "units_of_measure": "index*10", 
+            "M": {
+                "sl1": 70, 
+                "sl2": 70, 
+                "sl3": 72, 
+                "sl4": 74, 
+                "sl5": 76, 
+                "sl6": 77, 
+                "sl7": 78
+            }
+        }, 
+        "PHIKCL": {
+            "units_of_measure": "Index*10", 
+            "M": {
+                "sl1": 58, 
+                "sl2": 58, 
+                "sl3": 58, 
+                "sl4": 60, 
+                "sl5": 64, 
+                "sl6": 67, 
+                "sl7": 67
+            }
+        }, 
+        "PREMRG": {
+            "units_of_measure": "mm/month", 
+            "M": {
+                "Jan": 17, 
+                "Feb": 15, 
+                "Mar": 20, 
+                "Apr": 32, 
+                "May": 37, 
+                "Jun": 75, 
+                "Jul": 53, 
+                "Aug": 67, 
+                "Sep": 41, 
+                "Oct": 23, 
+                "Nov": 33, 
+                "Dec": 27
+            }
+        }, 
+        "SLTPPT": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 32, 
+                "sl2": 32, 
+                "sl3": 31, 
+                "sl4": 30, 
+                "sl5": 31, 
+                "sl6": 30, 
+                "sl7": 31
+            }
+        }, 
+        "SNDPPT": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 45, 
+                "sl2": 47, 
+                "sl3": 45, 
+                "sl4": 46, 
+                "sl5": 46, 
+                "sl6": 47, 
+                "sl7": 48
+            }
+        }, 
+        "TAXNWRB": {
+            "Acric Ferralsols": 0, 
+            "Acric Plinthosols": 0, 
+            "Albic Arenosols": 0, 
+            "Albic Luvisols": 9, 
+            "Alic Nitisols": 0, 
+            "Aluandic Andosols": 0, 
+            "Aric Regosols": 0, 
+            "Calcaric Regosols": 0, 
+            "Calcic Chernozems": 0, 
+            "Calcic Gleysols": 4, 
+            "Calcic Gypsisols": 0, 
+            "Calcic Histosols": 0, 
+            "Calcic Kastanozems": 1, 
+            "Calcic Luvisols": 0, 
+            "Calcic Solonetz": 0, 
+            "Calcic Vertisols": 0, 
+            "Cryic Histosols": 0, 
+            "Cutanic Alisols": 0, 
+            "Endogleyic Cambisols": 0, 
+            "Endogleyic Planosols": 0, 
+            "Ferralic Arenosols": 0, 
+            "Ferralic Cambisols": 0, 
+            "Fibric Histosols": 0, 
+            "Gleyic Luvisols": 7, 
+            "Gleyic Podzols": 0, 
+            "Gleyic Solonetz": 2, 
+            "Gypsic Solonchaks": 0, 
+            "Haplic Acrisols": 0, 
+            "Haplic Acrisols (Alumic)": 0, 
+            "Haplic Acrisols (Ferric)": 0, 
+            "Haplic Acrisols (Humic)": 0, 
+            "Haplic Albeluvisols": 0, 
+            "Haplic Alisols": 0, 
+            "Haplic Andosols": 0, 
+            "Haplic Arenosols": 2, 
+            "Haplic Arenosols (Calcaric)": 0, 
+            "Haplic Calcisols": 0, 
+            "Haplic Calcisols (Sodic)": 0, 
+            "Haplic Cambisols": 1, 
+            "Haplic Cambisols (Calcaric)": 0, 
+            "Haplic Cambisols (Chromic)": 0, 
+            "Haplic Cambisols (Dystric)": 0, 
+            "Haplic Cambisols (Eutric)": 0, 
+            "Haplic Cambisols (Humic)": 0, 
+            "Haplic Cambisols (Sodic)": 0, 
+            "Haplic Chernozems": 36, 
+            "Haplic Cryosols": 0, 
+            "Haplic Ferralsols": 0, 
+            "Haplic Ferralsols (Rhodic)": 0, 
+            "Haplic Ferralsols (Xanthic)": 0, 
+            "Haplic Fluvisols": 0, 
+            "Haplic Fluvisols (Arenic)": 0, 
+            "Haplic Fluvisols (Calcaric)": 0, 
+            "Haplic Fluvisols (Dystric)": 0, 
+            "Haplic Fluvisols (Eutric)": 0, 
+            "Haplic Gleysols": 0, 
+            "Haplic Gleysols (Dystric)": 0, 
+            "Haplic Gleysols (Eutric)": 0, 
+            "Haplic Gypsisols": 0, 
+            "Haplic Kastanozems": 2, 
+            "Haplic Leptosols": 0, 
+            "Haplic Leptosols (Eutric)": 0, 
+            "Haplic Lixisols": 0, 
+            "Haplic Lixisols (Chromic)": 0, 
+            "Haplic Lixisols (Ferric)": 0, 
+            "Haplic Luvisols": 0, 
+            "Haplic Luvisols (Chromic)": 0, 
+            "Haplic Luvisols (Ferric)": 0, 
+            "Haplic Nitisols (Rhodic)": 0, 
+            "Haplic Phaeozems": 20, 
+            "Haplic Planosols (Dystric)": 0, 
+            "Haplic Planosols (Eutric)": 1, 
+            "Haplic Podzols": 0, 
+            "Haplic Regosols (Dystric)": 0, 
+            "Haplic Regosols (Eutric)": 1, 
+            "Haplic Regosols (Sodic)": 0, 
+            "Haplic Solonchaks": 0, 
+            "Haplic Solonchaks (Sodic)": 0, 
+            "Haplic Solonetz": 3, 
+            "Haplic Umbrisols": 0, 
+            "Haplic Vertisols": 0, 
+            "Haplic Vertisols (Eutric)": 0, 
+            "Hemic Histosols": 0, 
+            "Histic Albeluvisols": 0, 
+            "Hypoluvic Arenosols": 0, 
+            "Leptic Cambisols": 0, 
+            "Leptic Luvisols": 0, 
+            "Leptic Phaeozems": 0, 
+            "Leptic Regosols": 0, 
+            "Leptic Umbrisols": 0, 
+            "Lithic Leptosols": 0, 
+            "Lixic Plinthosols": 0, 
+            "Luvic Calcisols": 0, 
+            "Luvic Chernozems": 0, 
+            "Luvic Phaeozems": 0, 
+            "Luvic Planosols": 0, 
+            "Luvic Stagnosols": 0, 
+            "Mollic Gleysols": 3, 
+            "Mollic Leptosols": 0, 
+            "Mollic Solonetz": 2, 
+            "Mollic Vertisols": 0, 
+            "Petric Calcisols": 0, 
+            "Petric Durisols": 0, 
+            "Plinthic Acrisols": 0, 
+            "Protic Arenosols": 0, 
+            "Rendzic Leptosols": 0, 
+            "Sapric Histosols": 0, 
+            "Solodic Planosols": 0, 
+            "Stagnic Luvisols": 0, 
+            "Turbic Cryosols": 0, 
+            "Umbric Albeluvisols": 1, 
+            "Umbric Ferralsols": 0, 
+            "Umbric Gleysols": 4, 
+            "Vertic Cambisols": 0, 
+            "Vertic Luvisols": 0, 
+            "Vetic Acrisols": 0, 
+            "Vitric Andosols": 0, 
+            "Vitric Cryosols": 0
+        }, 
+        "TAXOUSDA": {
+            "Albolls": 16, 
+            "Aqualfs": 0, 
+            "Aquands": 0, 
+            "Aquents": 1, 
+            "Aquepts": 3, 
+            "Aquerts": 0, 
+            "Aquods": 0, 
+            "Aquolls": 2, 
+            "Aquox": 0, 
+            "Aquults": 0, 
+            "Arents": 0, 
+            "Argids": 0, 
+            "Borolls": 63, 
+            "Calcids": 0, 
+            "Cambids": 0, 
+            "Cryalfs": 0, 
+            "Cryands": 0, 
+            "Cryepts": 0, 
+            "Cryids": 0, 
+            "Cryods": 0, 
+            "Cryolls": 0, 
+            "Durids": 0, 
+            "Fibrists": 0, 
+            "Fluvents": 1, 
+            "Folists": 0, 
+            "Gelands": 0, 
+            "Gelepts": 0, 
+            "Gelods": 0, 
+            "Gypsids": 0, 
+            "Hemists": 0, 
+            "Histels": 0, 
+            "Humods": 1, 
+            "Humults": 0, 
+            "Ochrepts": 2, 
+            "Orthels": 5, 
+            "Orthents": 3, 
+            "Orthods": 0, 
+            "Perox": 0, 
+            "Psamments": 0, 
+            "Rendolls": 0, 
+            "Salids": 0, 
+            "Saprists": 0, 
+            "Torrands": 0, 
+            "Torrerts": 0, 
+            "Torrox": 0, 
+            "Turbels": 0, 
+            "Udalfs": 0, 
+            "Udands": 0, 
+            "Udepts": 0, 
+            "Uderts": 0, 
+            "Udolls": 0, 
+            "Udox": 0, 
+            "Udults": 0, 
+            "Ustalfs": 0, 
+            "Ustands": 0, 
+            "Ustepts": 0, 
+            "Usterts": 0, 
+            "Ustolls": 1, 
+            "Ustox": 0, 
+            "Ustults": 0, 
+            "Vitrands": 0, 
+            "Xeralfs": 0, 
+            "Xerands": 0, 
+            "Xerepts": 0, 
+            "Xererts": 0, 
+            "Xerolls": 1, 
+            "Xerults": 0
+        }, 
+        "TEXMHT": {
+            "units_of_measure": "factor", 
+            "M": {
+                "sl1": 7, 
+                "sl2": 7, 
+                "sl3": 7, 
+                "sl4": 7, 
+                "sl5": 7, 
+                "sl6": 7, 
+                "sl7": 7
+            }
+        }, 
+        "TMDMOD_2001": {
+            "units_of_measure": "degree Celsius", 
+            "M": {
+                "Jan": -15, 
+                "Feb": -15, 
+                "Mar": -5, 
+                "Apr": 10, 
+                "May": 25, 
+                "Jun": 26, 
+                "Jul": 26, 
+                "Aug": 28, 
+                "Sep": 20, 
+                "Oct": 9, 
+                "Nov": 5, 
+                "Dec": -15
+            }
+        }, 
+        "TMDMOD_2011": {
+            "units_of_measure": "degree Celsius", 
+            "M": {
+                "Jan": -25, 
+                "Feb": -17, 
+                "Mar": -7, 
+                "Apr": 11, 
+                "May": 19, 
+                "Jun": 24, 
+                "Jul": 26, 
+                "Aug": 25, 
+                "Sep": 23, 
+                "Oct": 10, 
+                "Nov": -4, 
+                "Dec": -12
+            }
+        }, 
+        "TMNMOD_2001": {
+            "units_of_measure": "degree Celsius", 
+            "M": {
+                "Jan": -21, 
+                "Feb": -27, 
+                "Mar": -14, 
+                "Apr": -4, 
+                "May": 5, 
+                "Jun": 9, 
+                "Jul": 14, 
+                "Aug": 11, 
+                "Sep": 4, 
+                "Oct": -5, 
+                "Nov": -8, 
+                "Dec": -18
+            }
+        }, 
+        "TMNMOD_2011": {
+            "units_of_measure": "degree Celsius", 
+            "M": {
+                "Jan": -24, 
+                "Feb": -22, 
+                "Mar": -16, 
+                "Apr": -3, 
+                "May": 6, 
+                "Jun": 12, 
+                "Jul": 15, 
+                "Aug": 11, 
+                "Sep": 10, 
+                "Oct": -2, 
+                "Nov": -12, 
+                "Dec": -15
+            }
+        }, 
+        "WWP": {
+            "units_of_measure": "percent", 
+            "M": {
+                "sl1": 32, 
+                "sl2": 27, 
+                "sl3": 24, 
+                "sl4": 23, 
+                "sl5": 21, 
+                "sl6": 21, 
+                "sl7": 20
+            }
+        }, 
+        "TAXNWRBMajor": "Haplic Chernozems", 
+        "TAXGOUSDAMajor": "Borolls", 
+        "depthCodesMeters": {
+            "sd1": -0.025, 
+            "sd2": -0.1, 
+            "sd3": -0.225, 
+            "sd4": -0.45, 
+            "sd5": -0.8, 
+            "sd6": -1.5, 
+            "sl1": 0.0, 
+            "sl2": -0.05, 
+            "sl3": -0.15, 
+            "sl4": -0.3, 
+            "sl5": -0.6, 
+            "sl6": -1.0, 
+            "sl7": -2.0, 
+            "xd1": -0.2, 
+            "xd2": -0.5
+        }, 
+        "publication_date": "10-03-2017"
+    }
+}
