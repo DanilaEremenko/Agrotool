@@ -142,10 +142,14 @@ class TLayerParams():
     def update_water(self, texture):
         params_dict = get_params_dict_by_texture(texture)
 
-        self.Wfc = 0.45
+        self.Wfc = params_dict['Fc']
         self.tet_min = params_dict['Tr']
         self.tet_max = params_dict['Ts']
-        self.Kf = params_dict['Ks']
+        self.Kf = params_dict['Kf']
+        self.alpha_1 = params_dict['Alpha1']
+        self.beta_1 = params_dict['Beta1']
+        self.beta_2 = params_dict['Beta2']
+        self.Wz = params_dict['Wz']
 
     def update(self, layer_params_df):
         texture = layer_params_df['Texture']
