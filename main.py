@@ -1,5 +1,6 @@
 import numpy as np
 
+from agrotool_lib.RadiationBalance import calculateBalance
 from core import MatplotlibVisualizing
 from core import PlotlyVisualizing
 
@@ -97,6 +98,29 @@ def OneDayStep(hRunningController: TRunController,
         # Запоминаем почвенну радиацию
         # RadPhotosynthesis(hRunningController.agroEcoSystem, False)#TODO
         hRunningController.agroEcoSystem.airPart.SumRad = GetCurrSumRad(fi, cDateTime, stepTimeDelta)
+        # ---------------------------- get Kex from df -------------------------------------
+        try:
+            curKex = float(
+                hRunningController.weatherDf
+                [hRunningController.weatherDf['Date'] == cDateTime.strftime("%d/%m/%Y")]
+                ['Kex']
+            )
+        except Exception:
+            curKex = float(
+                hRunningController.weatherDf
+                [hRunningController.weatherDf['Date'] == (cDateTime - timedelta(days=1)).strftime("%d/%m/%Y")]
+                ['Kex']
+            )
+        # -----------------------------------------------------------------------------------
+        calculateBalance(
+            airPart=hRunningController.agroEcoSystem.airPart,
+            Rs=hRunningController.agroEcoSystem.airPart.SumRad,
+            Kex=curKex,
+            LAI=hRunningController.agroEcoSystem.cropPart.Individual_Plant.Shoot.Leaf.LAI,
+            T_curr=T_curr,
+            delta_step=stepTimeDelta,
+            phTime=hRunningController.agroEcoSystem.cropPart.Individual_Plant.Ph_Time
+        )
 
         ##########################################################################
         # --------------------- Водные потоки.Транспирация -----------------------
@@ -177,7 +201,10 @@ def OneDayStep(hRunningController: TRunController,
                     "Rad": [
                         hRunningController.agroEcoSystem.airPart.SumRad * 10_000 / stepTimeDelta.seconds],
                     "Prec": [Prec_curr],
-                    "SumSnow": [sumSnow]
+                    "SumSnow": [sumSnow],
+                    "Rnl": [hRunningController.agroEcoSystem.airPart.Rnl],
+                    "Rn": [hRunningController.agroEcoSystem.airPart.Rn],
+                    "G": [hRunningController.agroEcoSystem.airPart.G]
                 }
             )
         )
@@ -217,6 +244,9 @@ def ContinousRunning(hRunningController: TRunController):
                 "Rad": np.empty(0),
                 "Prec": np.empty(0),
                 "SumSnow": np.empty(0),
+                "Rnl": np.empty(0),
+                "Rn": np.empty(0),
+                "G": np.empty(0)
             }
         ),
         'soil': pd.DataFrame(
