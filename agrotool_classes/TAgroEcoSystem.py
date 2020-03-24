@@ -59,6 +59,7 @@ class TLeaf(TPlantPart):
     def __init__(self):
         super().__init__()
         self.ResStom = 0
+        self.LAI = 0
 
 
 class TShoot():
@@ -84,6 +85,14 @@ class TAirPart():
         self.sumTrans = 0
         self.sumPrec = 0
         self.SumRad = 0
+        self.Rnl = 0
+        self.Rn = 0
+        self.G = 0
+
+    def setBalanceParams(self, Rnl, Rn, G):
+        self.Rnl = Rnl
+        self.Rn = Rn
+        self.G = G
 
 
 # ------------------ Crop --------------------------
