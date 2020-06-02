@@ -2,7 +2,7 @@ import numpy as np
 from scipy.linalg import solve_banded
 
 
-def CN_diffusion_equation(T_0, D_arr, C_arr, dx, dt, N, bc_val, bc_type=['flux', 'flux']):
+def cn_diffusion_equation(T_0, D_arr, C_arr, dx, dt, N, bc_val, bc_type=['flux', 'flux']):
     """
     TODO define metrics
     :param T_0:     распределение интересующей величины в начальный момент времени
@@ -110,7 +110,7 @@ def solver_example():
     D_arr = np.array([200, 200, 200, 200, 200, 200, 200, 200, 200, 200])
     C_arr = np.ones(10)
     C_arr[3] = 4
-    T, t = CN_diffusion_equation(T_0,
+    T, t = cn_diffusion_equation(T_0,
                                  D_arr,
                                  C_arr,
                                  dx=10,

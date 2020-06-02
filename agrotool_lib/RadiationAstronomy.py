@@ -11,13 +11,13 @@ def sinhour(hour, b1, b2):
     return b1 + b2 * tau
 
 
-def AQR(shour):
+def aqr(shour):
     # Рассчитывает часовой поток приходящей к верхней границе атмосферы КВР
     # Часовой поток
     return SolarConst / 60 * shour
 
 
-def AQR_SLOPE(hour, fir, sd, psin, al):
+def aqr_slope(hour, fir, sd, psin, al):
     # { Назначение: pасчет потока пpиходящей к склону КВР без учета ослабления
     # SinH  - синус высоты стояния солнца sinus of sun height
     # Cosi - косинус угла между склоном и солнцем}
@@ -49,12 +49,13 @@ def AQR_SLOPE(hour, fir, sd, psin, al):
     # {Угол падения лучей на склон}
     cosi = cos(al) * sinh + sin(al) * cosh * cos(psip)
 
-    if cosi < 0: cosi = 0
+    if cosi < 0:
+        cosi = 0
 
     return (SolarConst / 4.187) * 60 * cosi
 
 
-def _DayLength(fi, cDate: datetime):
+def get_day_length(fi, cDate: datetime):
     # Calculate value into Result and place the required subscriptions
     # Вычисляет длину дня по широте и дате
     # Переводим широту в радианы
@@ -69,7 +70,7 @@ def _DayLength(fi, cDate: datetime):
     return 24 * aSunRise / pi
 
 
-def GetCurrRad(fi, cDate: datetime):
+def get_curr_rad(fi, cDate: datetime):
     # Переводим широту в радианы
     FiRad = fi * pi / 180
     # Вычисляем номер дня
@@ -81,12 +82,12 @@ def GetCurrRad(fi, cDate: datetime):
     b2 = cos(FiRad) * cos(sd)
 
     shour1 = sinhour(cDate.hour + cDate.minute / 60 + cDate.second / 3600, b1, b2)
-    return AQR(shour1) if shour1 > 0 else 0
+    return aqr(shour1) if shour1 > 0 else 0
 
 
-def GetCurrSumRad(fi, cDate: datetime, delta: timedelta):
+def get_curr_sum_rad(fi, cDate: datetime, delta: timedelta):
     if delta < timedelta(hours=1):
-        return GetCurrRad(fi, cDate) * delta.seconds
+        return get_curr_rad(fi, cDate) * delta.seconds
     else:
         step_num = int(delta.seconds / 3600 + 1)
         delta_step = timedelta(seconds=delta.seconds / step_num)
@@ -94,6 +95,6 @@ def GetCurrSumRad(fi, cDate: datetime, delta: timedelta):
         currDate = cDate + timedelta(seconds=delta.seconds / 2)
         sumRad = 0
         for i in range(0, step_num):
-            sumRad += GetCurrRad(fi, currDate) * delta_step.seconds
+            sumRad += get_curr_rad(fi, currDate) * delta_step.seconds
             currDate += delta_step
         return sumRad

@@ -1,19 +1,19 @@
 import numpy as np
 
-from agrotool_lib.RadiationBalance import calculateBalance
+from agrotool_lib.RadiationBalance import calculate_balance
 from core import MatplotlibVisualizing
 from core import PlotlyVisualizing
 
 from agrotool_classes.TAgroEcoSystem import TWeatherRecord
 from agrotool_classes.TRunController import TRunController
 
-from agrotool_lib.EvapBase import Evapotranspiration, SoilTemperature
+from agrotool_lib.EvapBase import evapo_transpiration, soil_temperature
 from agrotool_lib import Precipitation
-from agrotool_lib.RadiationAstronomy import GetCurrSumRad, _DayLength
-from agrotool_lib.WaterSoilDynamics import WaterSoilDynamics
-from agrotool_lib.Development import RecalculateBioTime
-from agrotool_lib.NitBal import RecalculateSoilNitrogen
-from agrotool_lib.Growing import Growth
+from agrotool_lib.RadiationAstronomy import get_curr_sum_rad, get_day_length
+from agrotool_lib.WaterSoilDynamics import water_soil_dynamics
+from agrotool_lib.Development import recalculate_bio_time
+from agrotool_lib.NitBal import recalculate_soil_nitrogen
+from agrotool_lib.Growing import growth
 from agrotool_lib.Snowmelt import popov_melting
 
 from datetime import datetime, timedelta
@@ -28,14 +28,14 @@ def pretty_print(text):
     print("%s%s%s" % (divisor, text, divisor))
 
 
-def OneDayStep(hRunningController: TRunController,
+def OneDayStep(h_running_controller: TRunController,
                cWR: TWeatherRecord,
                nextWR: TWeatherRecord,
                stepTimeDelta: timedelta,
                historyDict):
     print("____________\n____________\n DAY = %s\n____________\n____________\n" % cWR.date.__str__())
-    Tave = cWR.Tave
-    sumSnow = hRunningController.agroEcoSystem.airPart.SumSnow
+    Tave = cWR.temp_avg
+    sum_snow = h_running_controller.agro_eco_system.air_part.sum_snow
     timeForDailyOperation = timedelta(hours=12)
 
     # hours calulation
@@ -43,35 +43,37 @@ def OneDayStep(hRunningController: TRunController,
                         month=cWR.date.month,
                         day=cWR.date.day,
                         hour=14)
-    fi = hRunningController.region.Latitude
-    currDayLength = timedelta(hours=_DayLength(fi, cWR.date))
-    nextDayLength = timedelta(hours=_DayLength(fi, nextWR.date))
+    fi = h_running_controller.region.Latitude
+    currDayLength = timedelta(hours=get_day_length(fi, cWR.date))
+    nextDayLength = timedelta(hours=get_day_length(fi, nextWR.date))
     currSunriseDate = noonTime - currDayLength / 2
     nextSunriseDate = noonTime - nextDayLength / 2 + timedelta(days=1)
 
     # temperature calculation
     T_history = np.array(
-        [*np.linspace(cWR.Tmin, cWR.Tmax, num=int((noonTime - currSunriseDate) / stepTimeDelta))[0:-1],
-         *np.linspace(cWR.Tmax, nextWR.Tmin, num=int((nextSunriseDate - noonTime) / stepTimeDelta) + 2)]
+        [*np.linspace(cWR.temp_min, cWR.temp_max, num=int((noonTime - currSunriseDate) / stepTimeDelta))[0:-1],
+         *np.linspace(cWR.temp_max, nextWR.temp_min, num=int((nextSunriseDate - noonTime) / stepTimeDelta) + 2)]
     )
     timeHistory = [currSunriseDate + stepTimeDelta * i for i in range(0, len(T_history))]
 
-    prec_history = Precipitation.get_precipitation_history(cWR.Prec, T_history)
+    prec_history = Precipitation.get_precipitation_history(cWR.prec, T_history)
 
     ##############################################################################
     # ------------------------------ day step (Delta loop) -----------------------
     ##############################################################################
-    for cDateTime, T_curr, Prec_curr in zip(timeHistory, T_history, prec_history):
+    for c_date_time, T_curr, prec_curr in zip(timeHistory, T_history, prec_history):
+        pretty_print('%s' % c_date_time.strftime("%B-%d-%Y %H:%M:%S"))
 
         ##########################################################################
         # ------------------------- Ежедневные операции --------------------------
         ##########################################################################
-        pretty_print('Step2')
-        if cDateTime.second / 60 == timeForDailyOperation.seconds / 60:
+        if c_date_time.second / 60 == timeForDailyOperation.seconds / 60:
             # Утренние технологические операции
-            hRunningController.technologyDescriptor.Irrigation_Regime.stepoAct(hRunningController.agroEcoSystem)
-            hRunningController.technologyDescriptor.Fertilization_Regime.stepoAct(hRunningController.agroEcoSystem)
-            hRunningController.technologyDescriptor.Soil_Tillage_Regime.stepoAct(hRunningController.agroEcoSystem)
+            h_running_controller.technology_descriptor.Irrigation_Regime.stepoAct(h_running_controller.agro_eco_system)
+            h_running_controller.technology_descriptor.Fertilization_Regime.stepoAct(
+                h_running_controller.agro_eco_system)
+            h_running_controller.technology_descriptor.Soil_Tillage_Regime.stepoAct(
+                h_running_controller.agro_eco_system)
         else:
             print("Not now")
 
@@ -79,116 +81,102 @@ def OneDayStep(hRunningController: TRunController,
         # ------------------------- Расчет баланса снега -------------------------
         ##########################################################################
         # Семантические операции
-        pretty_print('Step3')
         if (T_curr < 0):  # Если текущая температура < 0 - количество снега увеличивается
-            sumSnow = sumSnow + Prec_curr
-            hRunningController.agroEcoSystem.airPart.alpha_snow = 0
+            sum_snow = sum_snow + prec_curr
+            h_running_controller.agro_eco_system.air_part.alpha_snow = 0
         else:  # Иначе считаем таяние снега и прибавляем осадки
-            delSnowPrec = popov_melting(hRunningController.agroEcoSystem, cDateTime, stepTimeDelta,
-                                        T_curr)  # Проверить формулу Попова
-            print(cDateTime)
-            Prec_curr += delSnowPrec
-            sumSnow = sumSnow - delSnowPrec
+            del_snow_prec = popov_melting(h_running_controller.agro_eco_system, c_date_time, stepTimeDelta,
+                                          T_curr)  # Проверить формулу Попова
+            print(c_date_time)
+            prec_curr += del_snow_prec
+            sum_snow = sum_snow - del_snow_prec
 
         ##########################################################################
         # ---- Радиация и фотосинтез(с потенциальным сопротивлением устьиц) ------
         ##########################################################################
-        pretty_print('Step6')
         # Запоминаем приходящщу радиацию
         # Запоминаем почвенну радиацию
         # RadPhotosynthesis(hRunningController.agroEcoSystem, False)#TODO
-        hRunningController.agroEcoSystem.airPart.SumRad = GetCurrSumRad(fi, cDateTime, stepTimeDelta)
+        h_running_controller.agro_eco_system.air_part.SumRad = get_curr_sum_rad(fi, c_date_time, stepTimeDelta)
         # ---------------------------- get Kex from df -------------------------------------
         try:
             curKex = float(
-                hRunningController.weatherDf
-                [hRunningController.weatherDf['Date'] == cDateTime.strftime("%d/%m/%Y")]
+                h_running_controller.weather_df
+                [h_running_controller.weather_df['Date'] == c_date_time.strftime("%d/%m/%Y")]
                 ['Kex']
             )
         except Exception:
             curKex = float(
-                hRunningController.weatherDf
-                [hRunningController.weatherDf['Date'] == (cDateTime - timedelta(days=1)).strftime("%d/%m/%Y")]
+                h_running_controller.weather_df
+                [h_running_controller.weather_df['Date'] == (c_date_time - timedelta(days=1)).strftime("%d/%m/%Y")]
                 ['Kex']
             )
         # -----------------------------------------------------------------------------------
-        calculateBalance(
-            airPart=hRunningController.agroEcoSystem.airPart,
-            Rs=hRunningController.agroEcoSystem.airPart.SumRad,
+        calculate_balance(
+            air_part=h_running_controller.agro_eco_system.air_part,
+            Rs=h_running_controller.agro_eco_system.air_part.SumRad,
             Kex=curKex,
-            LAI=hRunningController.agroEcoSystem.cropPart.Individual_Plant.Shoot.Leaf.LAI,
+            LAI=h_running_controller.agro_eco_system.crop_part.individual_plant.shoot.leaf.lai,
             T_curr=T_curr,
             delta_step=stepTimeDelta,
-            phTime=hRunningController.agroEcoSystem.cropPart.Individual_Plant.Ph_Time
+            ph_time=h_running_controller.agro_eco_system.crop_part.individual_plant.ph_time
         )
 
         ##########################################################################
         # --------------------- Водные потоки.Транспирация -----------------------
         ##########################################################################
-        pretty_print('Step7')
-        Evapotranspiration(hRunningController.agroEcoSystem)
+        evapo_transpiration(h_running_controller.agro_eco_system)
 
-        pretty_print('Step8')
-        SoilTemperature(
-            cSystem=hRunningController.agroEcoSystem,
+        soil_temperature(
+            cSystem=h_running_controller.agro_eco_system,
             T_curr=T_curr
         )
 
         ##########################################################################
         # ---------------------Расчет сумм осадков и транспирации ---------------- # TODO next step
         ##########################################################################
-        pretty_print('Step9')
         print("Some simple calculation without functions calls")
 
-        hRunningController.agroEcoSystem.airPart.sumTrans = hRunningController.agroEcoSystem.airPart.sumTrans \
-                                                            + hRunningController.agroEcoSystem.cropPart.Eplant \
-                                                            + hRunningController.agroEcoSystem.cropPart.Esoil
+        h_running_controller.agro_eco_system.air_part.sumTrans = h_running_controller.agro_eco_system.air_part.sum_trans \
+                                                                 + h_running_controller.agro_eco_system.crop_part.eplant \
+                                                                 + h_running_controller.agro_eco_system.crop_part.esoil
 
-        hRunningController.agroEcoSystem.airPart.sumPrec = hRunningController.agroEcoSystem.airPart.sumPrec \
-                                                           + cWR.Prec \
-                                                           + cWR.Watering
+        h_running_controller.agro_eco_system.air_part.sumPrec = h_running_controller.agro_eco_system.air_part.sum_prec \
+                                                                + cWR.prec \
+                                                                + cWR.watering
 
-        pretty_print('Step10')
         # Водные потоки в почве
         if (Tave >= 0):
-            WaterSoilDynamics(hRunningController.agroEcoSystem)
+            water_soil_dynamics(h_running_controller.agro_eco_system)
         else:
             print("RecalculateSoilNitrogen was't called (Tave = %d)" % (Tave))
 
         # Радиация и фотосинтез(с реальным сопротивлением устьиц)
-        pretty_print('Step11')
         # RadPhotosynthesis(hRunningController.agroEcoSystem, True)
 
         # Развитие
-        pretty_print('Step12')
-        RecalculateBioTime(hRunningController.agroEcoSystem)
+        recalculate_bio_time(h_running_controller.agro_eco_system)
 
-        pretty_print('Step13')
         # Почвенно - азотный блок
-        if (Tave >= 0) and (sumSnow < 1):
-            RecalculateSoilNitrogen(hRunningController.agroEcoSystem)
+        if (Tave >= 0) and (sum_snow < 1):
+            recalculate_soil_nitrogen(h_running_controller.agro_eco_system)
         else:
-            print("RecalculateSoilNitrogen was't called(Tave = %d, sumSnow = %d)" % (Tave, sumSnow))
+            print("RecalculateSoilNitrogen was't called(Tave = %d, sum_snow = %d)" % (Tave, sum_snow))
 
-        pretty_print('Step14')
         # Рост.Распределение ассимилятов
-        if hRunningController.agroEcoSystem.cropPart.Individual_Plant.Ifase > 1:
-            Growth(hRunningController.agroEcoSystem)
+        if h_running_controller.agro_eco_system.crop_part.individual_plant.ifase > 1:
+            growth(h_running_controller.agro_eco_system)
         else:
             print("Growth was't called(Ifase = %d)" % (
-                hRunningController.agroEcoSystem.cropPart.Individual_Plant.Ifase))
+                h_running_controller.agro_eco_system.crop_part.individual_plant.ifase))
 
-        pretty_print('Step15')
         # Освежение динамических переменных
-        hRunningController.agroEcoSystem.refreshing()
-        hRunningController.agroEcoSystem.airPart.SumSnow = sumSnow
+        h_running_controller.agro_eco_system.refreshing()
+        h_running_controller.agro_eco_system.air_part.sum_snow = sum_snow
 
-        pretty_print('Step17')
-
-        pretty_print('Step18')
         # Его присвоение
-        hRunningController.agroEcoSystem.airPart.currentEnv = cWR
-        bTime = hRunningController.agroEcoSystem.cropPart.Individual_Plant.Ph_Time
+        h_running_controller.agro_eco_system.air_part.currentEnv = cWR
+        bTime = h_running_controller.agro_eco_system.crop_part.individual_plant.ph_time
 
         ##########################################################################
         # ------------------------------ weather history -------------------------
@@ -196,15 +184,15 @@ def OneDayStep(hRunningController: TRunController,
         historyDict['weather'] = historyDict['weather'].append(
             pd.DataFrame(
                 {
-                    "Date": [cDateTime],
+                    "Date": [c_date_time],
                     "T": [T_curr],
                     "Rad": [
-                        hRunningController.agroEcoSystem.airPart.SumRad * 10_000 / stepTimeDelta.seconds],
-                    "Prec": [Prec_curr],
-                    "SumSnow": [sumSnow],
-                    "Rnl": [hRunningController.agroEcoSystem.airPart.Rnl],
-                    "Rn": [hRunningController.agroEcoSystem.airPart.Rn],
-                    "G": [hRunningController.agroEcoSystem.airPart.G]
+                        h_running_controller.agro_eco_system.air_part.SumRad * 10_000 / stepTimeDelta.seconds],
+                    "Prec": [prec_curr],
+                    "sum_snow": [sum_snow],
+                    "Rnl": [h_running_controller.agro_eco_system.air_part.Rnl],
+                    "Rn": [h_running_controller.agro_eco_system.air_part.Rn],
+                    "G": [h_running_controller.agro_eco_system.air_part.G]
                 }
             )
         )
@@ -212,10 +200,10 @@ def OneDayStep(hRunningController: TRunController,
         # ------------------------------ soil history ----------------------------
         ##########################################################################
         t = []
-        T = np.zeros(len(hRunningController.agroEcoSystem.soilPart.soilLayers))
+        T = np.zeros(len(h_running_controller.agro_eco_system.soil_part.soil_layers))
         layers = list(range(len(T)))
-        for i, layer in enumerate(hRunningController.agroEcoSystem.soilPart.soilLayers):
-            t.append(cDateTime)
+        for i, layer in enumerate(h_running_controller.agro_eco_system.soil_part.soil_layers):
+            t.append(c_date_time)
             T[i] = layer.T
 
         historyDict['soil'] = historyDict['soil'].append(
@@ -230,10 +218,10 @@ def OneDayStep(hRunningController: TRunController,
         )
 
         # Временной шаг
-        cDateTime += stepTimeDelta
+        c_date_time += stepTimeDelta
 
 
-def ContinousRunning(hRunningController: TRunController):
+def continous_running(hRunningController: TRunController):
     # Организация цикла по суточным шагам
 
     historyDict = {
@@ -243,7 +231,7 @@ def ContinousRunning(hRunningController: TRunController):
                 "T": np.empty(0),
                 "Rad": np.empty(0),
                 "Prec": np.empty(0),
-                "SumSnow": np.empty(0),
+                "sum_snow": np.empty(0),
                 "Rnl": np.empty(0),
                 "Rn": np.empty(0),
                 "G": np.empty(0)
@@ -258,9 +246,9 @@ def ContinousRunning(hRunningController: TRunController):
             }
         )
     }
-    weatherIter = iter(hRunningController.weatherDf.to_dict(orient='records'))
+    weatherIter = iter(hRunningController.weather_df.to_dict(orient='records'))
     weatherIter.__next__()
-    for cWR in hRunningController.weatherDf.to_dict(orient='records'):
+    for cWR in hRunningController.weather_df.to_dict(orient='records'):
 
         cWR = TWeatherRecord(cWR)
 
@@ -287,7 +275,7 @@ def ContinousRunning(hRunningController: TRunController):
     print("plotting temperature history in soil (it will be longer than previous plotting)")
 
     # show soil_layers.T for 10 days on dynamic graphic
-    show_day_num = int(len(historyDict['soil']) * 10 / len(hRunningController.weatherDf))
+    show_day_num = int(len(historyDict['soil']) * 10 / len(hRunningController.weather_df))
     historyDict['soil']['t'] = pd.to_numeric(historyDict['soil']['t'])
     PlotlyVisualizing.show_soil_from_df(
         df=historyDict['soil']
@@ -307,7 +295,7 @@ def main():
     hRunningController.update_params('environments/test_1/query_solidgrids.json')
     hRunningController.init_start(jsonPath='environments/test_1/initial_state.json')
 
-    ContinousRunning(hRunningController=hRunningController)
+    continous_running(hRunningController=hRunningController)
 
 
 if __name__ == '__main__':

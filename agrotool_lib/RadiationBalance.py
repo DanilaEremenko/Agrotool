@@ -12,7 +12,7 @@ def get_albedo(LAI):
     return 0
 
 
-def getNDVI(LAI, phTime):
+def get_NDVI(LAI, phTime):
     """
     Вычисление оптического индекса
     :param LAI:
@@ -32,21 +32,21 @@ def get_fC(LAI):
     return 0
 
 
-def consSBCorrect():
+def cons_correct_SB():
     # перевод из мегаджоулей/день в ватты
     return consSB * 10 ** 6 / (24 * 3600)
 
 
-def calculateBalance(airPart, Rs, Kex, LAI, T_curr, delta_step, phTime, mode='AllenFAO56'):
+def calculate_balance(air_part, Rs, Kex, LAI, T_curr, delta_step, ph_time, mode='AllenFAO56'):
     """
 
-    :param airPart:
+    :param air_part:
     :param Rs:
     :param Kex:
     :param LAI:
     :param T_curr:
     :param delta_step:
-    :param phTime:
+    :param ph_time:
     :param mode:
     :return:
     """
@@ -59,7 +59,7 @@ def calculateBalance(airPart, Rs, Kex, LAI, T_curr, delta_step, phTime, mode='Al
 
     # расчет длинноволной радиации
     # TODO добавить учет относительной влажности
-    Rnl = consSBCorrect() * (T_curr + 273.15) ** 4 * (1.35 * Kex - 0.35)
+    Rnl = cons_correct_SB() * (T_curr + 273.15) ** 4 * (1.35 * Kex - 0.35)
     if Rnl < 0:
         print()
 
@@ -73,7 +73,7 @@ def calculateBalance(airPart, Rs, Kex, LAI, T_curr, delta_step, phTime, mode='Al
         else:
             G = 0.5 * Rn
     elif mode == 'METRIC1':
-        G = Rn * T_curr * (0.0038 * 0.0074 * albedo) * (1 - 0.98 * getNDVI(LAI, phTime) ** 4)
+        G = Rn * T_curr * (0.0038 * 0.0074 * albedo) * (1 - 0.98 * get_NDVI(LAI, ph_time) ** 4)
     elif mode == 'METRIC2':
         if LAI >= 0.5:
             G = Rn * (0.05 * 0.18 * exp(-0.52 ** LAI))
@@ -83,4 +83,4 @@ def calculateBalance(airPart, Rs, Kex, LAI, T_curr, delta_step, phTime, mode='Al
     elif mode == 'SEBS':
         G = Rn * (0.05 + 1 - get_fC(LAI)) * 0.265
 
-    airPart.setBalanceParams(Rnl, Rn, G)
+    air_part.setBalanceParams(Rnl, Rn, G)

@@ -1,7 +1,7 @@
 # TODO check classes
 import json
 
-from agrotool_lib import thIdent
+from agrotool_lib import ThIdent
 from agrotool_lib.DebugInspector import whoami
 import copy
 from datetime import datetime
@@ -16,20 +16,22 @@ from agrotool_mappings.USDA_mapping import get_params_dict_by_texture
 class TWeatherRecord():
     def __init__(self, data):
         self.date = datetime.strptime(data["Date"], "%d/%m/%Y")
-        self.Prec = data["Prec"]  # precipitation
+        self.prec = data["Prec"]  # precipitation
         self.wind = data["Wind"]
-        self.Watering = 0  # TODO ???
-        self.Tmin = data["Tmin"]  # min temperature
-        self.Tmax = data["Tmax"]  # max temperature
-        self.Tave = int((self.Tmax + self.Tmin) / 2)  # average temperature
-        self.Kex = data[
+        self.watering = 0  # TODO ???
+        self.temp_min = data["Tmin"]  # min temperature
+        self.temp_max = data["Tmax"]  # max temperature
+        self.temp_avg = int((self.temp_max + self.temp_min) / 2)  # average temperature
+        self.kex = data[
             "Kex"]  # ослабление солнечной радиации (облачность фактическая радиация/если бы не было облаков)
 
     def __copy__(self):
         return copy.deepcopy(self)
 
 
+###########################################################################################
 # ------------------------------- Culture part --------------------------------------------
+###########################################################################################
 class Photosynthesis():
     def __init__(self):
         self.ResMes = 0
@@ -44,10 +46,12 @@ class Culture():
         self.Photosynthesis_Type_Descriptor = Photosynthesis()
 
 
+##########################################################################################
 # ------------------------------- Plant parts --------------------------------------------
+##########################################################################################
 class TPlantPart():
     def __init__(self):
-        self.AreaIndex = 0
+        self.area_index = 0
 
 
 class TStem(TPlantPart):
@@ -58,33 +62,36 @@ class TStem(TPlantPart):
 class TLeaf(TPlantPart):
     def __init__(self):
         super().__init__()
-        self.ResStom = 0
-        self.LAI = 0
+        self.res_stom = 0
+        self.lai = 0
 
 
 class TShoot():
     def __init__(self):
-        self.Leaf = TLeaf()
-        self.Stem = TStem()
+        self.leaf = TLeaf()
+        self.stem = TStem()
 
 
 class TIndividualtPlant():
     def __init__(self):
-        self.Ifase = 0
-        self.Ph_Time = 0
-        self.Shoot = TShoot()
-        self.Culture_Descriptor = Culture()
+        self.ifase = 0
+        self.ph_time = 0
+        self.shoot = TShoot()
+        self.culture_descriptor = Culture()
 
 
-# ------------------------------- Environment parts --------------------------------------------
+##########################################################################################
+# ------------------------------- Environment parts --------------------------------------
+##########################################################################################
+
 # ------------------ Air --------------------------
 class TAirPart():
     def __init__(self):
-        self.SumSnow = 0  # TODO
+        self.sum_snow = 0  # TODO
         self.alpha_snow = 0  # ready for melting
-        self.sumTrans = 0
-        self.sumPrec = 0
-        self.SumRad = 0
+        self.sum_trans = 0
+        self.sum_prec = 0
+        self.sum_rad = 0
         self.Rnl = 0
         self.Rn = 0
         self.G = 0
@@ -98,11 +105,11 @@ class TAirPart():
 # ------------------ Crop --------------------------
 class TCropPart():
     def __init__(self):
-        self.Esoil = 0
-        self.Eplant = 0
-        self.RshPlant = 0
+        self.esoil = 0
+        self.eplant = 0
+        self.rsh_plant = 0
         self.copr = 0
-        self.Individual_Plant = TIndividualtPlant()
+        self.individual_plant = TIndividualtPlant()
 
 
 # ------------------ Soil --------------------------
@@ -131,6 +138,8 @@ class TLayerParams():
         self.beta_1 = 0
         self.beta_2 = 0
         self.Kf = 0  # базовый коэффициент филтрации
+        self.C = 0
+        self.D = 0
 
     def update_termo(self, res):
         self.K0 = res[1] * 1E-7
@@ -175,7 +184,7 @@ class TLayerParams():
                                                                         layer_params_df['Clay']))
 
         # TODO replace with new realization
-        res, is_okay = thIdent.identify(
+        res, is_okay = ThIdent.identify(
             textType=textType,
             sand=layer_params_df['Sand'],
             silt=layer_params_df['Silt'],
@@ -212,30 +221,30 @@ class TSoiltLayer():
 
 class TSoilPart():
     def __init__(self, layers_num, depth):
-        self.soilSurface = TSoilSurface()
-        self.soilLayers = []
+        self.soil_surface = TSoilSurface()
+        self.soil_layers = []
         dh = depth / layers_num
         h = 0
         for i in range(layers_num):
-            self.soilLayers.append(TSoiltLayer(T=0, W=0, dh=dh, h=h))
+            self.soil_layers.append(TSoiltLayer(T=0, W=0, dh=dh, h=h))
             h += dh
 
     def calculate_temperature_in_layers(self):
         # TODO
-        for layer in self.soilLayers:
+        for layer in self.soil_layers:
             layer.calculate_termo_params()
 
     def init_start(self, T, W):
-        for layer in self.soilLayers:
+        for layer in self.soil_layers:
             layer.T = T
             layer.W = W / 100
 
-    def read_soil_file(self, path_solid, format='ISRIC'):
+    @staticmethod
+    def read_soil_file(path_solid, format='ISRIC'):
         # ISRIC,ICASA
         with open(path_solid) as solid_fp:
             solid_dict = json.load(solid_fp)
 
-        tab_len = len(solid_dict['properties']['CLYPPT']['M'].values())
         return pd.DataFrame(
             {
                 # TODO bad case if no top layer
@@ -289,7 +298,7 @@ class TSoilPart():
 
         new_dict = {'Depth': [], 'Texture': [], 'Bd': [], 'Corg': [], 'Sand': [], 'Silt': [], 'Clay': [], 'Wz': [],
                     'Fc': []}
-        for layer in self.soilLayers:
+        for layer in self.soil_layers:
 
             # define top layer
             top_layer = df[df['Depth'] <= layer.rep_h]
@@ -317,17 +326,19 @@ class TSoilPart():
         df = self.read_soil_file(solid_path)
         new_df = self.prepare_soil_layer_data(df)
 
-        for i, layer in enumerate(self.soilLayers):
+        for i, layer in enumerate(self.soil_layers):
             layer.params.update(new_df.iloc[i])
 
 
-# ------------------------------- AgroEcoSystem --------------------------------------------
+##########################################################################################
+# ------------------------------- AgroEcoSystem ------------------------------------------
+##########################################################################################
 class TAgroEcoSystem():
     def __init__(self, airPart: TAirPart, layers_num, depth):
-        self.airPart = airPart
-        self.cropPart = TCropPart()
-        self.soilPart = TSoilPart(layers_num, depth)
-        self.runController = None
+        self.air_part = airPart
+        self.crop_part = TCropPart()
+        self.soil_part = TSoilPart(layers_num, depth)
+        self.run_controller = None
 
     def refreshing(self):
         print("%s.%s is a stub" % (type(self).__name__, whoami()))

@@ -348,7 +348,7 @@ def table2a(mode, tt):
     return res
 
 
-def isProper(res):
+def is_proper(res):
     # TODO: плюс дополнительные проверки от Арханельской
     return (res[1] > 0) and (res[2] > 0) and (res[3] > 0) and (res[4] > 0.1)
 
@@ -394,13 +394,13 @@ def identify(textType, sand, silt, clay, bd, cc):
             if (isSGroup):
                 if (cc is not None):
                     res = table13(sand, silt, clay, cc)
-                    if (not isProper(res)):
+                    if (not is_proper(res)):
                         res = u_model(sand, silt, clay, bd, cc, 3)
-                    if ((not isProper(res)) and (bd is not None)):
+                    if ((not is_proper(res)) and (bd is not None)):
                         res = u_model(sand, silt, clay, bd, cc, 2)
-                    if (not isProper(res)):
+                    if (not is_proper(res)):
                         res = u_model(sand, silt, clay, bd, cc, 1)
-                    if (not isProper(res)):
+                    if (not is_proper(res)):
                         res = table6(textType)
 
                 else:
@@ -411,31 +411,31 @@ def identify(textType, sand, silt, clay, bd, cc):
                 if (cc is not None):
 
                     res = table12(textType, sand, silt, clay, cc)
-                    if (not isProper(res)):
+                    if (not is_proper(res)):
                         res = u_model(sand, silt, clay, bd, cc, 3)
-                    if ((not isProper(res)) and (bd is not None)):
+                    if ((not is_proper(res)) and (bd is not None)):
                         res = u_model(sand, silt, clay, bd, cc, 2)
-                    if (not isProper(res)):
+                    if (not is_proper(res)):
                         res = u_model(sand, silt, clay, bd, cc, 1)
-                    if (not isProper(res)):
+                    if (not is_proper(res)):
                         res = table6(textType)
 
                 else:
 
                     if (bd is not None):
                         res = table11(textType, sand, silt, clay, bd)
-                        if (not isProper(res)):
+                        if (not is_proper(res)):
                             res = u_model(sand, silt, clay, bd, cc, 2)
-                        if (not isProper(res)):
+                        if (not is_proper(res)):
                             res = u_model(sand, silt, clay, bd, cc, 1)
-                        if (not isProper(res)):
+                        if (not is_proper(res)):
                             res = table6(textType)
 
                     else:
                         res = table10(textType, sand, silt, clay)
-                        if (not isProper(res)):
+                        if (not is_proper(res)):
                             res = u_model(sand, silt, clay, bd, cc, 1)
-                        if (not isProper(res)):
+                        if (not is_proper(res)):
                             res = table6(textType)
 
     if (okay_ident):
@@ -460,9 +460,9 @@ def identify(textType, sand, silt, clay, bd, cc):
     return res, okay_ident
 
 
-def calculateK(w, k0, w0, a, b):
+def calculate_k(w, k0, w0, a, b):
     return k0 + a * exp(-0.5 * sqrt(ln(w / w0) / b))
 
 
-def calculateC(w, c1, c2):
+def calculate_c(w, c1, c2):
     return c1 + c2 * w

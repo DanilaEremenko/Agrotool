@@ -34,13 +34,13 @@ def get_precipitation_history(prec_sum, T_history):
                 prec_history[i] = 0
             else:
                 prec_history[i] = np.random.uniform(min_prec, max_prec) * \
-                                  int(np.random.randint(0, max_rand + 1) / max_rand) #
+                                  int(np.random.randint(0, max_rand + 1) / max_rand)  #
 
             if prec_history[i] != 0:
                 not_zero_indexes.append(i)
 
             if sum(prec_history) > prec_sum:
                 diff = sum(prec_history) - prec_sum
-                for i in not_zero_indexes:
-                    prec_history[i] -= diff / len(not_zero_indexes)
+                for j in not_zero_indexes:
+                    prec_history[j] -= diff / len(not_zero_indexes)
                 return prec_history
